@@ -4,18 +4,20 @@
 > hazard decisions.**
 >
 > The dates below reproduce an earlier deterministic calculation; they are not a
-> validated forecast. Several inputs are still unverified, and at least one of
-> them can move the answer by more than a year:
+> validated forecast. Open items, largest first:
 >
-> - the **vertical datum** of the surface and bed grids is unconfirmed (D-008) —
->   the whole analysis differences two elevation rasters whose references have
->   not been established;
-> - the **thinning rate** is a single uniform linear trend and is the parameter
->   the answer is most sensitive to by a wide margin; an updated estimate is
->   pending;
+> - the **thinning rate** is a single uniform linear trend, and it is the input
+>   the answer is most sensitive to by a wide margin (≈2.2 yr per m/yr); an
+>   updated estimate is pending;
 > - **no uncertainty is attached** to the headline dates — they are one
 >   realization, not a distribution;
-> - the **bed** is treated as exactly known, and its provenance is undocumented.
+> - the **vertical datum** of the surface and bed grids is not declared in either
+>   file. The surface is NAVD88 per the USGS Alaska IFSAR spec; the bed is
+>   aligned to OIB radar picks and so is probably WGS84 ellipsoid. The geoid
+>   height here is a near-constant +6.80 m, which is worth **0.08 yr** in the
+>   likely configuration and at most 0.83 yr in the worst one (D-008);
+> - the **bed** is treated as exactly known; a *uniform* bias barely matters
+>   (0.011 yr per m), but spatially correlated error could move the saddle.
 >
 > Every such item is tracked in [`docs/decisions.md`](docs/decisions.md). Read it
 > before citing or reusing anything here.

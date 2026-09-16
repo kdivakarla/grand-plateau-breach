@@ -81,6 +81,21 @@ def build_dam(cfg: Config, out_path: str | Path | None = None) -> DamObject:
     surface = np.where(valid, surface, np.nan)
     bed = np.where(valid, bed, np.nan)
 
+    # `2010_IFSAR_GLACIER_SURFACE_CLIPPED.tif` carries no nodata flag and uses 0.0
+    # as fill over 56% of its extent. Those cells sit outside the bedrock domain,
+    # so they never reach the analysis -- but assert it rather than trust it, since
+    # a wider bed raster would silently admit 0 m "ground". See D-008.
+    fill = build.get("surface_fill_sentinel", 0.0)
+    if fill is not None:
+        leaked = int(np.count_nonzero(valid & (surface_r.values == fill)))
+        if leaked:
+            raise ValueError(
+                f"{surface_r.path.name}: {leaked:,} cells inside the analysis domain "
+                f"equal the fill sentinel {fill}. These are not real elevations. "
+                "Mask them or set dam.build.surface_fill_sentinel to null after "
+                "confirming with the owner that the value is genuine."
+            )
+
     seeds_cfg = build["seeds"]
     method = seeds_cfg.get("method", "explicit")
     discovered: list[dict] = []

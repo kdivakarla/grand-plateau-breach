@@ -117,25 +117,59 @@ measured from the legacy rasters or stated by the owner.
   a fixed sill is the more conservative choice. Sensitivity is
   -0.12 yr per metre of lake level.
 
-## D-008 — Vertical datum: unverified
+## D-008 — Vertical datum: the two grids are on different references
 - Date: 2026-09-16
-- Decided by: **UNCONFIRMED — blocks nothing yet, but must be settled**
+- Decided by: **owner decision still required**, but the facts are now established
 - Context: `2010_IFSAR_GLACIER_SURFACE_CLIPPED.tif` and `Bedrock_Aligned.tif` are
   differenced cell-by-cell, which is only valid on a common vertical datum.
-  Neither file records one, and the configs carry `vertical_datum: UNVERIFIED`.
-- Decision: none yet. `units.assert_same_datum` refuses to combine unverified
-  datums, but the baseline path does not call it — doing so would have blocked
-  reproduction of the owner's result.
-- Affects: everything. A constant offset between the two grids is exactly a
-  uniform bias in `Phi` and shifts the date by 0.11 yr per metre of surface bias.
-- **Raised in priority 2026-09-16.** The owner plans to bring in OIB lidar.
-  Airborne lidar is normally delivered as WGS84 *ellipsoid* height, while state
-  IFSAR products are normally *orthometric*. In southeast Alaska the geoid
-  separation between those two references is a large number of metres — easily
-  enough to move a breach date by a year or more at 0.11 yr per metre. Mixing an
-  OIB surface into this pipeline without an explicit geoid conversion would be a
-  silent, systematic error. Confirm and record the datum of every elevation
-  dataset in `docs/data_sources.md` before the first OIB-derived surface is used.
+  Neither file declares one.
+
+### Evidence gathered 2026-09-16
+1. **Neither raster carries a vertical CRS.** `gdalinfo` shows a 2D projected CRS
+   only. The Loso lidar tiles do declare `VERTCRS`, but as `"unknown"`.
+2. **The IFSAR surface is NAVD88 orthometric.** USGS states that Alaska IFSAR is
+   delivered in NAD83 horizontal / NAVD88 vertical, metres, at 5 m post spacing —
+   which matches this grid exactly.
+3. **`Bedrock_Aligned.tif` is tied to the OIB radar bed.** Sampled at all 932 OIB
+   points inside the domain, `bed_h_m` minus `Bedrock_Aligned` has a median of
+   **+0.04 m** (IQR -0.32 to +0.54, sd 1.30). The raster was evidently built by
+   aligning to those picks — hence the name — so it inherits the OIB datum.
+   IceBridge L2 products are normally WGS84 ellipsoid heights; **this is the one
+   fact still to confirm, from the NSIDC user guide for `IRUAFHF1B`.**
+4. **The offset is a constant.** GEOID12A geoid height over the domain is
+   +6.66 m (NW corner) to +6.86 m (SE corner), i.e. **+6.80 m ± 0.10 m** — a
+   0.21 m gradient across 12 km. A single scalar correction is sufficient; no
+   geoid grid is needed.
+
+### Effect on the answer (measured, not estimated)
+With a 6.80 m mismatch, depending on which dataset is the odd one out:
+
+| case | shift | integer year |
+|---|---|---|
+| bed ellipsoidal, surface and lake level orthometric | **-0.075 yr** | 2030 / 2035 — unchanged |
+| surface ellipsoidal, bed and lake level orthometric | -0.751 yr | 2029 / 2034 |
+| lake level on the other datum from both grids | -0.826 yr | 2029 / 2034 |
+
+The **first row is the likely configuration** given the evidence above: the bed
+came from OIB, the surface is IFSAR, and the lake levels were presumably read off
+the IFSAR-based QGIS project. In that case the datum mismatch is worth 0.08 yr
+and changes neither headline date.
+
+### What is still open
+- Confirm the OIB vertical datum from the NSIDC user guide (item 3).
+- Confirm which datum the lake levels of 110 m and 17 m were read in. This is the
+  single input with the largest datum leverage (-0.12 yr per metre).
+- Decide whether to correct the bed by -6.80 m for internal consistency. This is
+  a physics/input change and needs owner approval; the baseline currently applies
+  **no** correction, matching the owner's original rasters.
+
+### Aside — a fill-value trap in the IFSAR raster
+`2010_IFSAR_GLACIER_SURFACE_CLIPPED.tif` has **no nodata flag set** and uses
+`0.0` as fill for 3,570,204 of its 6,347,328 cells (56%). None of them fall
+inside the current analysis domain, which is masked by the bedrock raster's
+proper nodata, so the baseline is unaffected — verified, and `preprocess` now
+asserts it. But any future widening of the domain, or any use of this raster on
+its own, must mask zeros explicitly or it will read 0 m fill as real ground.
 
 ## D-009 — Horizontal CRS stays Alaska Albers (ESRI:102247)
 - Date: 2026-09-16
