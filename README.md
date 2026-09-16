@@ -1,5 +1,25 @@
 # gpbreach — Grand Plateau breach forecasting
 
+> **Preliminary research code — not peer-reviewed. Do not use for operational
+> hazard decisions.**
+>
+> The dates below reproduce an earlier deterministic calculation; they are not a
+> validated forecast. Several inputs are still unverified, and at least one of
+> them can move the answer by more than a year:
+>
+> - the **vertical datum** of the surface and bed grids is unconfirmed (D-008) —
+>   the whole analysis differences two elevation rasters whose references have
+>   not been established;
+> - the **thinning rate** is a single uniform linear trend and is the parameter
+>   the answer is most sensitive to by a wide margin; an updated estimate is
+>   pending;
+> - **no uncertainty is attached** to the headline dates — they are one
+>   realization, not a distribution;
+> - the **bed** is treated as exactly known, and its provenance is undocumented.
+>
+> Every such item is tracked in [`docs/decisions.md`](docs/decisions.md). Read it
+> before citing or reusing anything here.
+
 Forecasts the timing of two glacier-dammed lake breaches at Grand Plateau
 Glacier, southeast Alaska.
 
@@ -92,7 +112,15 @@ legacy/       why there is no legacy script, and how the method was recovered
 
 ## Status
 
-Phase 1 complete and passing, **pending owner confirmation of the method
-summary** (CLAUDE.md §8.3 Step 0). Ten decisions are logged as `TO CONFIRM` in
-`docs/decisions.md`; D-005 (which basins each breach connects) and D-008
-(vertical datum) are the two that could change the answer.
+Phase 1 complete and passing. Ten decisions are logged in `docs/decisions.md`;
+D-005 (which basins each breach connects) and D-009 (Alaska Albers as the
+analysis CRS) are confirmed, the rest remain `TO CONFIRM`. **D-008 — the vertical
+datum — is the open item most likely to change the answer**, and it becomes
+urgent as soon as OIB lidar (WGS84 ellipsoid heights, UTM 7N) is mixed with the
+IFSAR surface.
+
+Phases 2–6 (hindcast harness, uncertainty one source at a time, ERA5 daily
+forcing, PyGEM ensembles, Sobol analysis) are not started.
+
+No license file is present, so the default is all-rights-reserved. Add one if you
+want others to be able to reuse this.
