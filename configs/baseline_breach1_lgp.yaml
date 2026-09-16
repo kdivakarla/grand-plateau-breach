@@ -1,0 +1,56 @@
+# Breach 1 -- upper (LGP) lake drains into Grand Plateau Lake.
+# Baseline: reproduces the owner's QGIS result of 2030. Do not tune (CLAUDE.md 8.1).
+run_id: baseline_breach1_lgp
+
+breach:
+  name: breach1_lgp
+  description: Upper LGP lake -> Grand Plateau Lake
+  source_label: upper (LGP) lake
+  target_label: Grand Plateau Lake
+  legacy_rasters: ../Buoyant_Maps_LGP_GP    # Buoyancy_State_2027..2032.tif
+
+dam:
+  processed: data/processed/dam_breach1_lgp.npz
+  build:
+    surface: ../2010_IFSAR_GLACIER_SURFACE_CLIPPED.tif
+    bed: ../Bedrock_Aligned.tif
+    base_year: 2010
+    # TO CONFIRM (D-008): datum of both grids is unverified. Set once the owner
+    # confirms it; units.assert_same_datum() will refuse to combine nulls.
+    vertical_datum: UNVERIFIED
+    seeds:
+      # Recovered from the legacy rasters: the minimum-Phi cell of each basin.
+      # Verify in QGIS before trusting -- see D-005.
+      method: explicit
+      seed_lake: [2486, 2450]     # upper (LGP) lake basin, map (912857.5, 1110502.5)
+      seed_target: [1903, 649]    # Grand Plateau Lake basin, map (903852.5, 1113417.5)
+      # Equivalent auto-discovery (basins of Phi <= 266.32 m at nominal f):
+      #   method: auto_largest_basins
+      #   reference_threshold_m: 266.32
+      #   lake_basin_rank: 2
+      #   target_basin_rank: 1
+
+components:
+  surface: linear_thinning
+  bed: static
+  lake: fixed
+  criterion: flotation_connectivity
+  connectivity: 8               # 4 gives the identical baseline dates
+
+parameters:
+  # f = 1 / (1 + r) with the legacy ratio r = 0.1. See D-003.
+  flotation_fraction:
+    nominal: 0.9090909090909091
+  lake_level_m:
+    nominal: 110.0              # D-007
+  dhdt_m_per_yr:
+    nominal: -9.05              # D-004
+
+sampling:
+  n_realizations: 1             # deterministic = Monte Carlo with N = 1
+  seed: 20260916
+
+time:
+  start_year: 2010
+  end_year: 2045
+  step_years: 1

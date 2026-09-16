@@ -1,0 +1,51 @@
+# Breach 2 -- Alsek Lake drains into Grand Plateau Lake, abandoning Dry Bay.
+# Baseline: reproduces the owner's QGIS result of 2035. Do not tune (CLAUDE.md 8.1).
+run_id: baseline_breach2_alsek
+
+breach:
+  name: breach2_alsek
+  description: Alsek Lake -> Grand Plateau Lake
+  source_label: Alsek Lake
+  target_label: Grand Plateau Lake
+  legacy_rasters: ../Buoyant_Maps_Alsek_GP  # Buoyancy_State_2032..2036.tif
+
+dam:
+  processed: data/processed/dam_breach2_alsek.npz
+  build:
+    surface: ../2010_IFSAR_GLACIER_SURFACE_CLIPPED.tif
+    bed: ../Bedrock_Aligned.tif
+    base_year: 2010
+    vertical_datum: UNVERIFIED  # TO CONFIRM (D-008)
+    seeds:
+      method: explicit
+      seed_lake: [122, 22]      # Alsek Lake basin, map (900717.5, 1122322.5)
+      seed_target: [1903, 649]  # Grand Plateau Lake basin, map (903852.5, 1113417.5)
+      # Equivalent auto-discovery (basins of Phi <= 214.45 m at nominal f):
+      #   method: auto_largest_basins
+      #   reference_threshold_m: 214.45
+      #   lake_basin_rank: 2
+      #   target_basin_rank: 1
+
+components:
+  surface: linear_thinning
+  bed: static
+  lake: fixed
+  criterion: flotation_connectivity
+  connectivity: 8
+
+parameters:
+  flotation_fraction:
+    nominal: 0.9090909090909091  # D-003
+  lake_level_m:
+    nominal: 17.0                # D-007
+  dhdt_m_per_yr:
+    nominal: -9.05               # D-004
+
+sampling:
+  n_realizations: 1
+  seed: 20260916
+
+time:
+  start_year: 2010
+  end_year: 2050
+  step_years: 1

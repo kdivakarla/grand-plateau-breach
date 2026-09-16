@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpbreach"
+version = "0.1.0"
+description = "Breach timing for the Grand Plateau glacier-dammed lakes"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "pandas>=2.1",
+    "pyyaml>=6.0",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+geo = ["rasterio>=1.3", "geopandas>=0.14", "rioxarray>=0.15", "xarray>=2023.12", "h5py>=3.10"]
+io = ["pyarrow>=14"]
+dev = ["pytest>=7.4", "ruff>=0.4"]
+
+[project.scripts]
+gpbreach = "gpbreach.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "NPY", "RUF"]
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q"
+markers = ["slow: touches the full-resolution rasters"]

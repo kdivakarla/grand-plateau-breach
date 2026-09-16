@@ -1,0 +1,11 @@
+data/*
+!data/README.md
+results/*
+!results/README.md
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.DS_Store

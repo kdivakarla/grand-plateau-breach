@@ -1,0 +1,38 @@
+# Baseline answers. PROTECTED PATH -- owner approval required to change
+# (CLAUDE.md Section 2.4). These are the owner's deterministic QGIS results,
+# recovered exactly from Buoyant_Maps_*/Buoyancy_State_<year>.tif.
+#
+# Provenance: the legacy rasters are an exact linear function of the two input
+# grids, R_Y = S + r*B - (1+r)*L - |dhdt|*(Y - 2010), fitted with zero residual.
+# That fit fixes r = 0.1, dhdt = -9.05 m/yr, base year 2010, and the two lake
+# levels below. See docs/baseline_method.md.
+
+breach1_lgp:
+  config: configs/baseline_breach1_lgp.yaml
+  legacy_rasters: ../Buoyant_Maps_LGP_GP
+  legacy_years: [2027, 2028, 2029, 2030, 2031, 2032]
+  breach_year: 2030                  # owner's headline result; exact match required
+  breach_year_continuous: 2029.63613
+  phi_crit_m: 271.5517938787287
+  breach_cell: [2067, 1629]
+  breach_xy: [908752.5, 1112597.5]
+  tolerance:
+    breach_year: 0                   # integer year must match exactly
+    breach_year_continuous: 0.001
+    phi_crit_m: 1.0e-6
+    legacy_raster_max_abs_diff_m: 1.0e-3
+
+breach2_alsek:
+  config: configs/baseline_breach2_alsek.yaml
+  legacy_rasters: ../Buoyant_Maps_Alsek_GP
+  legacy_years: [2032, 2033, 2034, 2035, 2036]
+  breach_year: 2035
+  breach_year_continuous: 2034.60204
+  phi_crit_m: 219.4077287153764
+  breach_cell: [941, 603]
+  breach_xy: [903622.5, 1118227.5]
+  tolerance:
+    breach_year: 0
+    breach_year_continuous: 0.001
+    phi_crit_m: 1.0e-6
+    legacy_raster_max_abs_diff_m: 1.0e-3

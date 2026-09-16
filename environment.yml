@@ -1,0 +1,29 @@
+# PROPOSED -- not yet created. Creating or modifying an environment needs owner
+# approval (CLAUDE.md Section 2.2).
+#
+# The existing `gpgn-318` env has numpy/scipy/pandas/matplotlib/pyyaml/h5py and
+# runs the engine and the full test suite today, but it has no rasterio and no
+# pytest. Until this env exists:
+#   * preprocessing falls back to a gdal_translate subprocess (see io/raster.py)
+#   * run the suite with `python workflow/run_tests_without_pytest.py`
+name: gpbreach
+channels: [conda-forge]
+dependencies:
+  - python=3.12
+  - numpy>=1.26
+  - scipy>=1.11
+  - pandas>=2.1
+  - pyyaml>=6.0
+  - matplotlib>=3.8
+  - rasterio>=1.3      # preferred raster backend
+  - geopandas>=0.14    # gis/ vector layers (lake outlines, dam lines)
+  - rioxarray>=0.15
+  - xarray>=2023.12
+  - h5py>=3.10         # IceBridge HDF5 (later phases)
+  - pyarrow>=14        # samples.parquet
+  - pytest>=7.4
+  - ruff>=0.4
+  - jupyterlab
+  - pip
+  - pip:
+      - -e .
