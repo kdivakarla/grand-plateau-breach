@@ -1,26 +1,43 @@
-# PROPOSED -- not yet created. Creating or modifying an environment needs owner
-# approval (CLAUDE.md Section 2.2).
+# Environment for the gpbreach package.
 #
-# The existing `gpgn-318` env has numpy/scipy/pandas/matplotlib/pyyaml/h5py and
-# runs the engine and the full test suite today, but it has no rasterio and no
-# pytest. Until this env exists:
-#   * preprocessing falls back to a gdal_translate subprocess (see io/raster.py)
-#   * run the suite with `python workflow/run_tests_without_pytest.py`
+#   conda env create -f environment.yml
+#   conda activate gpbreach
+#   make -f workflow/Makefile all
+#
+# `pip: -e .` installs the package in editable mode, which puts `src/` on the
+# path and provides the `gpbreach` console script -- so no PYTHONPATH is needed.
+# Run `conda env create` from the repository root or that line will not resolve.
+#
+# Lower bounds only, not exact pins: this is a research environment that should
+# stay installable as conda-forge moves. `environment.lock.yml` records the exact
+# build that produced the committed baseline; use it to reproduce a run exactly.
 name: gpbreach
 channels: [conda-forge]
 dependencies:
   - python=3.12
+
+  # --- engine: everything src/gpbreach needs to run and be tested -------------
   - numpy>=1.26
-  - scipy>=1.11
+  - scipy>=1.11          # ndimage.label -- the connectivity test
   - pandas>=2.1
   - pyyaml>=6.0
-  - matplotlib>=3.8
-  - rasterio>=1.3      # preferred raster backend
-  - geopandas>=0.14    # gis/ vector layers (lake outlines, dam lines)
+  - matplotlib>=3.8      # report plot and breach maps
+
+  # --- raster and vector I/O --------------------------------------------------
+  - rasterio>=1.3        # preferred backend in io/raster.py
+  - gdal>=3.8            # gdalinfo/gdalwarp/ogr2ogr; also the subprocess fallback
+  - pyproj>=3.6          # UTM 7N/8N -> Alaska Albers for OIB and lidar (D-009)
+  - geopandas>=0.14      # gis/ vector layers: lake outlines, dam lines, sills
+  - shapely>=2.0
+
+  # --- later phases (CLAUDE.md Section 9); installed now to keep one solve -----
   - rioxarray>=0.15
   - xarray>=2023.12
-  - h5py>=3.10         # IceBridge HDF5 (later phases)
-  - pyarrow>=14        # samples.parquet
+  - h5py>=3.10           # IceBridge HDF5
+  - netcdf4>=1.6         # ERA5 and PyGEM outputs
+
+  # --- storage, tooling, notebooks -------------------------------------------
+  - pyarrow>=14          # results/runs/<id>/samples.parquet
   - pytest>=7.4
   - ruff>=0.4
   - jupyterlab

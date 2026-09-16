@@ -59,26 +59,37 @@ arithmetic, sampling `f` needs only a precomputed 1-D curve, and only a perturbe
 ## Quick start
 
 ```bash
-export PYTHONPATH=src            # until the env below exists and `pip install -e .` is run
+conda env create -f environment.yml
+conda activate gpbreach
 
-python -m gpbreach.cli preprocess  configs/baseline_breach1_lgp.yaml
-python -m gpbreach.cli run         configs/baseline_breach1_lgp.yaml
-python -m gpbreach.cli sensitivity configs/baseline_breach1_lgp.yaml
-python -m gpbreach.cli fcurve      configs/baseline_breach1_lgp.yaml
+gpbreach preprocess  configs/baseline_breach1_lgp.yaml   # rasters -> dam object
+gpbreach run         configs/baseline_breach1_lgp.yaml   # breach date + report
+gpbreach map         configs/baseline_breach1_lgp.yaml   # pathway map + QGIS CSVs
+gpbreach sensitivity configs/baseline_breach1_lgp.yaml   # yr per unit of each input
+gpbreach fcurve      configs/baseline_breach1_lgp.yaml   # Phi_crit(f) table
 ```
 
-or `make -f workflow/Makefile all`.
+or `make -f workflow/Makefile all`, which preprocesses, runs both breaches, and
+runs the tests. Verify with `pytest` (30 tests) and `ruff check .`.
+
+Note that `configs/*.yaml` point at the rasters with `../`-relative paths, which
+resolve only inside the owner's `Grand_Plateau_Master/` tree. See
+[`data/README.md`](data/README.md) to run from a fresh clone.
 
 ## Environment
 
-`environment.yml` is **proposed, not created** — making or changing an
-environment needs owner approval (CLAUDE.md §2.2). Everything above runs today in
-the existing `gpgn-318` env, with two fallbacks:
+`environment.yml` is the everyday install. `environment.lock.yml` is a full
+build-pinned export of the solve that produced the committed baseline — macOS
+arm64 only, for reproducing a run exactly or bisecting a result that moved after
+an update.
 
-- no `rasterio` → preprocessing shells out to `gdal_translate` (found inside
-  QGIS.app). One warning per raster; results are identical.
-- no `pytest` → run `python workflow/run_tests_without_pytest.py`, which executes
-  the real test functions with a small shim.
+Two fallbacks exist for running outside this environment, and both are still
+exercised in the sibling `gpgn-318` env:
+
+- no `rasterio` → `io/raster.py` shells out to `gdal_translate` (on PATH, or
+  inside QGIS.app). One warning per raster; results are byte-identical.
+- no `pytest` → `python workflow/run_tests_without_pytest.py` executes the same
+  test functions through a small shim.
 
 ## How much does the answer move?
 

@@ -40,7 +40,8 @@ class Config:
         path = _resolve(path)
         with path.open() as fh:
             data = yaml.safe_load(fh)
-        missing = {"run_id", "breach", "dam", "components", "parameters", "sampling", "time"} - set(data)
+        required = {"run_id", "breach", "dam", "components", "parameters", "sampling", "time"}
+        missing = required - set(data)
         if missing:
             raise ValueError(f"{path.name} is missing required sections: {sorted(missing)}")
         return cls(
@@ -71,4 +72,6 @@ class Config:
     @property
     def years(self) -> list[int]:
         t = self.time
-        return list(range(int(t["start_year"]), int(t["end_year"]) + 1, int(t.get("step_years", 1))))
+        return list(
+            range(int(t["start_year"]), int(t["end_year"]) + 1, int(t.get("step_years", 1)))
+        )

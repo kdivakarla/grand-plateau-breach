@@ -1,14 +1,15 @@
 """Command line interface.
 
-    gpbreach preprocess configs/baseline_breach1_lgp.yaml
-    gpbreach run        configs/baseline_breach1_lgp.yaml
-    gpbreach seeds      configs/baseline_breach1_lgp.yaml --threshold 266.32
-    gpbreach fcurve     configs/baseline_breach1_lgp.yaml
+gpbreach preprocess configs/baseline_breach1_lgp.yaml
+gpbreach run        configs/baseline_breach1_lgp.yaml
+gpbreach seeds      configs/baseline_breach1_lgp.yaml --threshold 266.32
+gpbreach fcurve     configs/baseline_breach1_lgp.yaml
 """
 
 from __future__ import annotations
 
 import argparse
+import contextlib
 import logging
 import sys
 from pathlib import Path
@@ -16,8 +17,8 @@ from pathlib import Path
 import numpy as np
 
 from .analysis.fcurve import build_fcurve
-from .analysis.report import write_manifest, write_report
 from .analysis.maps import breach_map
+from .analysis.report import write_manifest, write_report
 from .analysis.sensitivity import sensitivity_table
 from .config import Config, repo_root
 from .dam import DamObject
@@ -27,10 +28,7 @@ from .preprocess.build_dam import build_dam, find_basin_seeds
 
 def _load_dam(cfg: Config) -> DamObject:
     if not cfg.dam_path.exists():
-        raise SystemExit(
-            f"{cfg.dam_path} does not exist. Run:\n"
-            f"    gpbreach preprocess {cfg.path}"
-        )
+        raise SystemExit(f"{cfg.dam_path} does not exist. Run:\n    gpbreach preprocess {cfg.path}")
     return DamObject.load(cfg.dam_path)
 
 
@@ -51,16 +49,21 @@ def cmd_seeds(args) -> int:
     cfg = Config.load(args.config)
     dam = _load_dam(cfg)
     found = find_basin_seeds(
-        dam.surface, dam.bed, f=cfg.nominal("flotation_fraction"),
-        reference_threshold=args.threshold, n_basins=args.n_basins,
+        dam.surface,
+        dam.bed,
+        f=cfg.nominal("flotation_fraction"),
+        reference_threshold=args.threshold,
+        n_basins=args.n_basins,
         connectivity=int(cfg.components.get("connectivity", 8)),
     )
     print(f"basins of Phi_f <= {args.threshold} m  (f = {cfg.nominal('flotation_fraction'):.6f})")
     for d in found:
         x, y = dam.xy(d["seed"])
         area = d["n_cells"] * dam.cell_area_m2 / 1e6
-        print(f"  rank {d['rank']}: {area:8.3f} km2  seed {d['seed']}  "
-              f"map ({x:.1f}, {y:.1f})  Phi_min {d['phi_min_m']:.2f} m")
+        print(
+            f"  rank {d['rank']}: {area:8.3f} km2  seed {d['seed']}  "
+            f"map ({x:.1f}, {y:.1f})  Phi_min {d['phi_min_m']:.2f} m"
+        )
     if args.csv:
         out = Path(args.csv)
         out.write_text(
@@ -84,10 +87,10 @@ def cmd_run(args) -> int:
     write_manifest(cfg, result, run_dir)
     report = write_report(cfg, result, run_dir)
     result.samples.to_csv(run_dir / "samples.csv")
-    try:
+    # samples.parquet is the record CLAUDE.md Section 5 asks for; the CSV beside
+    # it is the fallback when pyarrow is absent.
+    with contextlib.suppress(ImportError, ValueError):
         result.samples.to_parquet(run_dir / "samples.parquet")
-    except (ImportError, ValueError):
-        pass  # pyarrow not installed; the CSV is the fallback record
 
     s = result.samples.iloc[0]
     print(f"{cfg.run_id}")
@@ -104,8 +107,9 @@ def cmd_run(args) -> int:
 def cmd_fcurve(args) -> int:
     cfg = Config.load(args.config)
     dam = _load_dam(cfg)
-    curve = build_fcurve(dam, args.f_min, args.f_max, args.spacing,
-                         int(cfg.components.get("connectivity", 8)))
+    curve = build_fcurve(
+        dam, args.f_min, args.f_max, args.spacing, int(cfg.components.get("connectivity", 8))
+    )
     out = repo_root() / "data" / "processed" / f"fcurve_{dam.name}.npz"
     curve.save(out)
     nominal = cfg.nominal("flotation_fraction")
@@ -134,8 +138,10 @@ def cmd_map(args) -> int:
         label_source=cfg.breach.get("source_label", "source lake"),
         label_target=cfg.breach.get("target_label", "target lake"),
     )
-    print(f"{cfg.run_id}: breach point {out['crest']} -> "
-          f"map {dam.xy(out['crest'])}, Phi_crit {out['phi_crit']:.4f} m")
+    print(
+        f"{cfg.run_id}: breach point {out['crest']} -> "
+        f"map {dam.xy(out['crest'])}, Phi_crit {out['phi_crit']:.4f} m"
+    )
     for key in ("map", "points", "pathway"):
         print(f"  {key:9s} {out[key]}")
     print("  load the two CSVs in QGIS (delimited text, x/y fields, CRS = the raster's)")
@@ -153,12 +159,16 @@ def cmd_sensitivity(args) -> int:
         connectivity=int(cfg.components.get("connectivity", 8)),
     )
     print(f"{cfg.run_id}: breach year sensitivity (central differences)\n")
-    print(f"{'parameter':<20} {'+/- step':>9} {'year(-)':>9} {'year(+)':>9} "
-          f"{'span (yr)':>10} {'per unit':>12}")
+    print(
+        f"{'parameter':<20} {'+/- step':>9} {'year(-)':>9} {'year(+)':>9} "
+        f"{'span (yr)':>10} {'per unit':>12}"
+    )
     for _, r in table.iterrows():
-        print(f"{r['parameter']:<20} {r['half_step']:>9.3g} {r['year_minus']:>9.2f} "
-              f"{r['year_plus']:>9.2f} {r['year_span_over_step']:>10.2f} "
-              f"{r['d_year_per_unit']:>12.4f}")
+        print(
+            f"{r['parameter']:<20} {r['half_step']:>9.3g} {r['year_minus']:>9.2f} "
+            f"{r['year_plus']:>9.2f} {r['year_span_over_step']:>10.2f} "
+            f"{r['d_year_per_unit']:>12.4f}"
+        )
     if args.csv:
         table.to_csv(args.csv, index=False)
         print(f"\nwrote {args.csv}")
@@ -166,8 +176,9 @@ def cmd_sensitivity(args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(prog="gpbreach", description=__doc__,
-                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p = argparse.ArgumentParser(
+        prog="gpbreach", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     p.add_argument("-v", "--verbose", action="store_true")
     sub = p.add_subparsers(dest="command", required=True)
 
@@ -203,8 +214,10 @@ def main(argv: list[str] | None = None) -> int:
     sp.set_defaults(func=cmd_sensitivity)
 
     args = p.parse_args(argv)
-    logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING,
-                        format="%(levelname)s %(name)s: %(message)s")
+    logging.basicConfig(
+        level=logging.INFO if args.verbose else logging.WARNING,
+        format="%(levelname)s %(name)s: %(message)s",
+    )
     return args.func(args)
 
 

@@ -28,8 +28,17 @@ def test_same_seed_same_draws() -> None:
         "nominal": 110.0,
         "distribution": {"type": "normal", "sd": 5.0},
     }
-    c = Config(spec["run_id"], spec["breach"], spec["dam"], spec["components"],
-               spec["parameters"], spec["sampling"], spec["time"], cfg.path, spec)
+    c = Config(
+        spec["run_id"],
+        spec["breach"],
+        spec["dam"],
+        spec["components"],
+        spec["parameters"],
+        spec["sampling"],
+        spec["time"],
+        cfg.path,
+        spec,
+    )
     a, b = build_sample_table(c), build_sample_table(c)
     assert np.array_equal(a.to_numpy(), b.to_numpy())
     assert a["lake_level_m"].std() > 0

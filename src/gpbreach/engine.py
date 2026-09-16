@@ -29,8 +29,8 @@ class RunResult:
     run_id: str
     dam_name: str
     samples: pd.DataFrame
-    margin: pd.DataFrame          # index realization, columns year; m (positive = holds)
-    timeseries: pd.DataFrame      # per-year diagnostics for realization 0
+    margin: pd.DataFrame  # index realization, columns year; m (positive = holds)
+    timeseries: pd.DataFrame  # per-year diagnostics for realization 0
     phi_crit: dict[float, float]  # f -> saddle value (m)
     breach_cells: np.ndarray = field(default_factory=lambda: np.empty((0, 2), int))
     meta: dict = field(default_factory=dict)
@@ -66,7 +66,9 @@ def run(cfg: Config, dam: DamObject | None = None) -> RunResult:
     if len(phi_crit_by_f) > 50:
         log.warning(
             "%d distinct flotation fractions required %d saddle solves; use "
-            "analysis.fcurve for ensembles of this size.", len(phi_crit_by_f), len(phi_crit_by_f)
+            "analysis.fcurve for ensembles of this size.",
+            len(phi_crit_by_f),
+            len(phi_crit_by_f),
         )
     phi_crit = np.array([phi_crit_by_f[float(v)] for v in f])
 
@@ -88,8 +90,9 @@ def run(cfg: Config, dam: DamObject | None = None) -> RunResult:
     margin = phi_crit[:, None] + (f * dhdt)[:, None] * t[None, :] - level[:, None]
     margin_df = pd.DataFrame(margin, index=samples.index, columns=[int(y) for y in years])
 
-    timeseries = _diagnostics(dam, criterion, years, float(f[0]), float(level[0]),
-                              float(dhdt[0]), float(phi_crit[0]))
+    timeseries = _diagnostics(
+        dam, criterion, years, float(f[0]), float(level[0]), float(dhdt[0]), float(phi_crit[0])
+    )
     cells = criterion.breach_cells(dam, float(f[0]), float(phi_crit[0]))
 
     return RunResult(
@@ -108,8 +111,15 @@ def run(cfg: Config, dam: DamObject | None = None) -> RunResult:
     )
 
 
-def _diagnostics(dam: DamObject, criterion: FlotationConnectivity, years: np.ndarray,
-                 f: float, level: float, dhdt: float, phi_crit: float) -> pd.DataFrame:
+def _diagnostics(
+    dam: DamObject,
+    criterion: FlotationConnectivity,
+    years: np.ndarray,
+    f: float,
+    level: float,
+    dhdt: float,
+    phi_crit: float,
+) -> pd.DataFrame:
     """Year-by-year values at the breach point, for the baseline report."""
     phi = flotation_field(dam.surface, dam.bed, f)
     cells = criterion.breach_cells(dam, f, phi_crit)

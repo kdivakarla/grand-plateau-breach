@@ -82,19 +82,24 @@ class FlotationConnectivity:
     connectivity: int = 8
     name: str = "flotation_connectivity"
 
-    def critical_threshold(self, surface: np.ndarray, bed: np.ndarray, f: float,
-                           seed_a: tuple[int, int], seed_b: tuple[int, int]) -> float:
+    def critical_threshold(
+        self,
+        surface: np.ndarray,
+        bed: np.ndarray,
+        f: float,
+        seed_a: tuple[int, int],
+        seed_b: tuple[int, int],
+    ) -> float:
         """Saddle value ``Phi_crit(f)`` between the two seeds (m)."""
-        return saddle_threshold(
-            flotation_field(surface, bed, f), seed_a, seed_b, self.connectivity
-        )
+        return saddle_threshold(flotation_field(surface, bed, f), seed_a, seed_b, self.connectivity)
 
     def critical_threshold_for_dam(self, dam: DamObject, f: float) -> float:
         return self.critical_threshold(dam.surface, dam.bed, f, dam.seed_lake, dam.seed_target)
 
     @staticmethod
-    def breach_time(phi_crit: np.ndarray, level: np.ndarray, dhdt: np.ndarray,
-                    f: np.ndarray) -> np.ndarray:
+    def breach_time(
+        phi_crit: np.ndarray, level: np.ndarray, dhdt: np.ndarray, f: np.ndarray
+    ) -> np.ndarray:
         """Years after ``base_year`` until breach -- equation (3). Vectorised.
 
         Returns ``inf`` where the dam never breaches (no thinning, or the basins
@@ -111,15 +116,17 @@ class FlotationConnectivity:
         return np.where(np.isfinite(phi_crit), np.maximum(t, 0.0), np.inf)
 
     @staticmethod
-    def threshold_at(level: np.ndarray, dhdt: np.ndarray, f: np.ndarray,
-                     t_years: np.ndarray) -> np.ndarray:
+    def threshold_at(
+        level: np.ndarray, dhdt: np.ndarray, f: np.ndarray, t_years: np.ndarray
+    ) -> np.ndarray:
         """Buoyancy threshold ``L - f*dhdt*t`` at time ``t`` (m)."""
         return np.asarray(level, dtype=float) - np.asarray(f, dtype=float) * np.asarray(
             dhdt, dtype=float
         ) * np.asarray(t_years, dtype=float)
 
-    def buoyant_mask(self, dam: DamObject, f: float, level: float, dhdt: float,
-                     t_years: float) -> np.ndarray:
+    def buoyant_mask(
+        self, dam: DamObject, f: float, level: float, dhdt: float, t_years: float
+    ) -> np.ndarray:
         """Cells meeting the buoyancy condition at time ``t_years``."""
         phi = flotation_field(dam.surface, dam.bed, f)
         return np.isfinite(phi) & (phi <= self.threshold_at(level, dhdt, f, t_years))
@@ -134,8 +141,9 @@ class FlotationConnectivity:
             self.connectivity,
         )
 
-    def legacy_margin(self, dam: DamObject, f: float, level: float, dhdt: float,
-                      t_years: float) -> np.ndarray:
+    def legacy_margin(
+        self, dam: DamObject, f: float, level: float, dhdt: float, t_years: float
+    ) -> np.ndarray:
         """The owner's QGIS raster, reproduced cell-for-cell.
 
         ``Buoyancy_State_<year>.tif`` = ``S + r*B - (1 + r)*L - (-dhdt)*t`` with

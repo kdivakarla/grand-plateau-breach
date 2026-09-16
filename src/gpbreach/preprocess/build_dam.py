@@ -39,8 +39,9 @@ def find_basin_seeds(
     Returned largest-first. Which basins correspond to which lakes is for the
     owner to confirm (D-005).
     """
-    phi = np.where(np.isfinite(surface) & np.isfinite(bed),
-                   flotation_field(surface, bed, f), np.inf)
+    phi = np.where(
+        np.isfinite(surface) & np.isfinite(bed), flotation_field(surface, bed, f), np.inf
+    )
     labels, _ = ndimage.label(phi <= reference_threshold, structure=_structure(connectivity))
     sizes = np.bincount(labels.ravel())
     sizes[0] = 0

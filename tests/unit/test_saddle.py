@@ -11,19 +11,19 @@ from gpbreach.saddle import connected_at, locate_saddle, saddle_threshold
 def test_single_gap_is_the_saddle() -> None:
     """Two basins separated by a wall with one low notch."""
     field = np.full((5, 7), 100.0)
-    field[2, 0:3] = 0.0     # basin A
-    field[2, 4:7] = 0.0     # basin B
-    field[2, 3] = 42.0      # the notch
+    field[2, 0:3] = 0.0  # basin A
+    field[2, 4:7] = 0.0  # basin B
+    field[2, 3] = 42.0  # the notch
     assert saddle_threshold(field, (2, 0), (2, 6), connectivity=4) == pytest.approx(42.0)
 
 
 def test_lowest_of_several_passes_wins() -> None:
     """Two routes between the basins; the minimax path takes the lower notch."""
     field = np.full((5, 7), 100.0)
-    field[1:4, 0:3] = 0.0   # basin A, spanning rows 1-3 so both notches are reachable
-    field[1:4, 4:7] = 0.0   # basin B
-    field[1, 3] = 70.0      # high notch
-    field[3, 3] = 30.0      # low notch -- this is the saddle
+    field[1:4, 0:3] = 0.0  # basin A, spanning rows 1-3 so both notches are reachable
+    field[1:4, 4:7] = 0.0  # basin B
+    field[1, 3] = 70.0  # high notch
+    field[3, 3] = 30.0  # low notch -- this is the saddle
     assert saddle_threshold(field, (1, 0), (1, 6), connectivity=4) == pytest.approx(30.0)
 
 
@@ -48,7 +48,7 @@ def test_nan_cells_never_connect() -> None:
     field = np.full((5, 7), 100.0)
     field[2, 0:3] = 0.0
     field[2, 4:7] = 0.0
-    field[:, 3] = np.nan    # an impassable gap
+    field[:, 3] = np.nan  # an impassable gap
     assert saddle_threshold(field, (2, 0), (2, 6), connectivity=4) == np.inf
 
 

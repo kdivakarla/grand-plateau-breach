@@ -5,13 +5,13 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
+from gpbreach.components.criterion import FlotationConnectivity, flotation_field
 from gpbreach.constants import (
     LEGACY_FLOTATION_FRACTION,
     LEGACY_THICKNESS_RATIO,
     fraction_to_ratio,
     ratio_to_fraction,
 )
-from gpbreach.components.criterion import FlotationConnectivity, flotation_field
 
 
 def test_ratio_and_fraction_are_inverses() -> None:
@@ -21,8 +21,8 @@ def test_ratio_and_fraction_are_inverses() -> None:
 
 def test_legacy_ratio_is_not_exactly_f_090() -> None:
     """r = 0.1 implies f = 0.9091, not 0.90. Recorded as D-003, not silently fixed."""
-    assert LEGACY_FLOTATION_FRACTION == pytest.approx(1 / 1.1)
-    assert LEGACY_FLOTATION_FRACTION != pytest.approx(0.90, abs=1e-4)
+    assert pytest.approx(1 / 1.1) == LEGACY_FLOTATION_FRACTION
+    assert pytest.approx(0.90, abs=1e-4) != LEGACY_FLOTATION_FRACTION
     assert ratio_to_fraction(1 / 9) == pytest.approx(0.90)
     assert LEGACY_THICKNESS_RATIO == 0.1
 
@@ -83,15 +83,18 @@ def test_breach_time_is_vectorised_over_realizations() -> None:
 
 def test_no_thinning_never_breaches() -> None:
     crit = FlotationConnectivity()
-    t = crit.breach_time(np.array([271.55]), np.array([110.0]), np.array([0.0]),
-                         np.array([0.9]))
+    t = crit.breach_time(np.array([271.55]), np.array([110.0]), np.array([0.0]), np.array([0.9]))
     assert np.isinf(t[0])
 
 
 def test_higher_lake_level_breaches_sooner() -> None:
     crit = FlotationConnectivity()
-    args = (np.array([271.55, 271.55]), np.array([100.0, 120.0]),
-            np.array([-9.05, -9.05]), np.array([1 / 1.1, 1 / 1.1]))
+    args = (
+        np.array([271.55, 271.55]),
+        np.array([100.0, 120.0]),
+        np.array([-9.05, -9.05]),
+        np.array([1 / 1.1, 1 / 1.1]),
+    )
     t = crit.breach_time(*args)
     assert t[1] < t[0]
 

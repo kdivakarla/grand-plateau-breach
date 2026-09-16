@@ -36,8 +36,9 @@ def _draw(rng: np.random.Generator, spec: dict[str, Any], n: int) -> np.ndarray:
         raise ValueError(f"unknown distribution type {kind!r}")
     lo, hi = dist.get("clip_low"), dist.get("clip_high")
     if lo is not None or hi is not None:
-        values = np.clip(values, lo if lo is not None else -np.inf,
-                         hi if hi is not None else np.inf)
+        values = np.clip(
+            values, lo if lo is not None else -np.inf, hi if hi is not None else np.inf
+        )
     return values
 
 

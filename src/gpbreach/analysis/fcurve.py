@@ -41,8 +41,9 @@ class FCurve:
             )
         return np.interp(f, self.f, self.phi_crit)
 
-    def max_interp_error(self, dam: DamObject, n_checks: int = 9,
-                         rng: np.random.Generator | None = None) -> float:
+    def max_interp_error(
+        self, dam: DamObject, n_checks: int = 9, rng: np.random.Generator | None = None
+    ) -> float:
         """Largest |interpolated - exact| at points between the tabulated nodes."""
         rng = rng or np.random.default_rng(0)
         probes = rng.uniform(self.f[0], self.f[-1], n_checks)
@@ -53,8 +54,13 @@ class FCurve:
     def save(self, path: str | Path) -> Path:
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        np.savez(path, f=self.f, phi_crit=self.phi_crit, dam_name=self.dam_name,
-                 connectivity=self.connectivity)
+        np.savez(
+            path,
+            f=self.f,
+            phi_crit=self.phi_crit,
+            dam_name=self.dam_name,
+            connectivity=self.connectivity,
+        )
         return path
 
     @classmethod
@@ -63,10 +69,15 @@ class FCurve:
             return cls(z["f"], z["phi_crit"], str(z["dam_name"]), int(z["connectivity"]))
 
 
-def build_fcurve(dam: DamObject, f_min: float = 0.80, f_max: float = 0.98,
-                 spacing: float = 0.005, connectivity: int = 8) -> FCurve:
+def build_fcurve(
+    dam: DamObject,
+    f_min: float = 0.80,
+    f_max: float = 0.98,
+    spacing: float = 0.005,
+    connectivity: int = 8,
+) -> FCurve:
     """Tabulate ``Phi_crit`` over ``[f_min, f_max]``."""
-    n = int(round((f_max - f_min) / spacing)) + 1
+    n = round((f_max - f_min) / spacing) + 1
     grid = np.linspace(f_min, f_max, n)
     crit = FlotationConnectivity(connectivity=connectivity)
     values = np.array([crit.critical_threshold_for_dam(dam, float(v)) for v in grid])

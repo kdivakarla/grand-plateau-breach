@@ -72,8 +72,7 @@ def test_connectivity_choice_does_not_change_the_answer(name: str) -> None:
     cfg, dam, _ = _result(case)
     f = cfg.nominal("flotation_fraction")
     values = {
-        c: FlotationConnectivity(connectivity=c).critical_threshold_for_dam(dam, f)
-        for c in (4, 8)
+        c: FlotationConnectivity(connectivity=c).critical_threshold_for_dam(dam, f) for c in (4, 8)
     }
     assert values[4] == pytest.approx(values[8], abs=1e-9)
 
@@ -81,7 +80,7 @@ def test_connectivity_choice_does_not_change_the_answer(name: str) -> None:
 @pytest.mark.parametrize("name", sorted(CASES))
 def test_matches_legacy_rasters_every_year(name: str) -> None:
     """Cell-for-cell equality with the owner's QGIS output, for every year."""
-    from gpbreach.io import read_raster  # noqa: PLC0415
+    from gpbreach.io import read_raster
 
     case = CASES[name]
     folder = (repo_root() / case["legacy_rasters"]).resolve()
@@ -114,7 +113,7 @@ def test_matches_legacy_rasters_every_year(name: str) -> None:
 @pytest.mark.parametrize("name", sorted(CASES))
 def test_legacy_raster_connectivity_gives_the_same_year(name: str) -> None:
     """Reading the breach year off the owner's own rasters reproduces the answer."""
-    from gpbreach.io import read_raster  # noqa: PLC0415
+    from gpbreach.io import read_raster
 
     case = CASES[name]
     folder = (repo_root() / case["legacy_rasters"]).resolve()
@@ -129,7 +128,7 @@ def test_legacy_raster_connectivity_gives_the_same_year(name: str) -> None:
         # The owner's raster is negative where buoyant, so the sub-level set is
         # {legacy <= 0}; a breach is a connected path between the two seeds.
         field = np.where(np.isfinite(legacy), legacy, np.inf)
-        from gpbreach.saddle import connected_at  # noqa: PLC0415
+        from gpbreach.saddle import connected_at
 
         if connected_at(field, 0.0, dam.seed_lake, dam.seed_target, criterion.connectivity):
             connected_years.append(year)

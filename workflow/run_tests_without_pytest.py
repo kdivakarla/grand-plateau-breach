@@ -56,7 +56,8 @@ class _Approx:
             return False
         if e.ndim == 0:
             return self._close(float(o), float(e))
-        return all(self._close(float(x), float(y)) for x, y in zip(o.ravel(), e.ravel()))
+        pairs = zip(o.ravel(), e.ravel(), strict=True)
+        return all(self._close(float(x), float(y)) for x, y in pairs)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -124,9 +125,12 @@ def main(argv: list[str]) -> int:
                 continue
             params = getattr(fn, "_params", None)
             calls = (
-                [((), {})] if params is None
-                else [((), dict(zip(params[0], v if isinstance(v, tuple) else (v,))))
-                      for v in params[1]]
+                [((), {})]
+                if params is None
+                else [
+                    ((), dict(zip(params[0], v if isinstance(v, tuple) else (v,), strict=True)))
+                    for v in params[1]
+                ]
             )
             for args, kwargs in calls:
                 label = f"{rel}::{name}" + (f"[{list(kwargs.values())}]" if kwargs else "")

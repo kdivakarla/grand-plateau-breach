@@ -7,7 +7,7 @@ import json
 import platform
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -32,10 +32,20 @@ def _checksum(path: Path, limit: int = 64 * 1024 * 1024) -> str:
 def _git_state() -> dict:
     try:
         root = repo_root()
-        commit = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
-                                capture_output=True, text=True, check=True).stdout.strip()
-        dirty = bool(subprocess.run(["git", "-C", str(root), "status", "--porcelain"],
-                                    capture_output=True, text=True, check=True).stdout.strip())
+        commit = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        dirty = bool(
+            subprocess.run(
+                ["git", "-C", str(root), "status", "--porcelain"],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+        )
         return {"commit": commit, "dirty": dirty}
     except (subprocess.CalledProcessError, FileNotFoundError):
         return {"commit": None, "dirty": None, "note": "not a git repository"}
@@ -53,7 +63,7 @@ def write_manifest(cfg: Config, result: RunResult, run_dir: Path) -> Path:
             continue
     manifest = {
         "run_id": cfg.run_id,
-        "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+        "timestamp_utc": datetime.now(UTC).isoformat(),
         "config_path": str(cfg.path),
         "config": cfg.raw,
         "git": _git_state(),
@@ -89,7 +99,7 @@ def write_report(cfg: Config, result: RunResult, run_dir: Path) -> Path:
         f"- Surface change dh/dt = {s['dhdt_m_per_yr']:.3f} m yr-1",
         f"- Saddle value Phi_crit = **{s['phi_crit_m']:.4f} m**",
         "",
-        f"## Breach date",
+        "## Breach date",
         "",
         f"- Continuous crossing: **{s['breach_year_continuous']:.3f}**",
         f"- First annual map showing a connected pathway: **{int(s['breach_year'])}**",
@@ -100,7 +110,8 @@ def write_report(cfg: Config, result: RunResult, run_dir: Path) -> Path:
         "",
         "`margin = f * H_ice - h_lake` in metres; positive means the dam holds.",
         "",
-        "| year | surface (m) | ice thickness (m) | lake depth (m) | f*H (m) | margin (m) | threshold (m) | connected |",
+        "| year | surface (m) | ice thickness (m) | lake depth (m) | f*H (m) | "
+        "margin (m) | threshold (m) | connected |",
         "|---|---|---|---|---|---|---|---|",
     ]
     for _, r in ts.iterrows():
@@ -132,6 +143,7 @@ def write_report(cfg: Config, result: RunResult, run_dir: Path) -> Path:
 def _plot_margin(result: RunResult, run_dir: Path) -> Path | None:
     try:
         import matplotlib
+
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except ImportError:  # pragma: no cover
@@ -150,10 +162,11 @@ def _plot_margin(result: RunResult, run_dir: Path) -> Path | None:
     yr = float(result.samples["breach_year_continuous"].iloc[0])
     if np.isfinite(yr):
         ax.axvline(yr, color="#c00000", lw=1, alpha=0.6)
-        ax.annotate(f"{yr:.2f}", (yr, 0), textcoords="offset points", xytext=(6, 8),
-                    color="#c00000")
+        ax.annotate(
+            f"{yr:.2f}", (yr, 0), textcoords="offset points", xytext=(6, 8), color="#c00000"
+        )
     ax.set_xlabel("year")
-    ax.set_ylabel("margin  f·H − h_lake  (m)")
+    ax.set_ylabel("margin  f*H - h_lake  (m)")
     ax.set_title(f"{result.run_id}: dam margin at the breach point")
     ax.legend(frameon=False)
     ax.grid(alpha=0.3)

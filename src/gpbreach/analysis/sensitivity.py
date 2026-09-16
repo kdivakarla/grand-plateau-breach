@@ -29,19 +29,33 @@ from ..components.criterion import FlotationConnectivity
 from ..dam import DamObject
 
 
-def breach_year(dam: DamObject, criterion: FlotationConnectivity, f: float, level: float,
-                dhdt: float, bed_offset: float = 0.0, surface_offset: float = 0.0) -> float:
+def breach_year(
+    dam: DamObject,
+    criterion: FlotationConnectivity,
+    f: float,
+    level: float,
+    dhdt: float,
+    bed_offset: float = 0.0,
+    surface_offset: float = 0.0,
+) -> float:
     """Continuous breach year, optionally with uniform offsets applied to the grids."""
     phi = criterion.critical_threshold(
         dam.surface + surface_offset, dam.bed + bed_offset, f, dam.seed_lake, dam.seed_target
     )
-    t = criterion.breach_time(np.array([phi]), np.array([level]), np.array([dhdt]),
-                              np.array([f]))[0]
+    t = criterion.breach_time(np.array([phi]), np.array([level]), np.array([dhdt]), np.array([f]))[
+        0
+    ]
     return float(dam.base_year + t)
 
 
-def sensitivity_table(dam: DamObject, f: float, level: float, dhdt: float,
-                      connectivity: int = 8, steps: dict[str, float] | None = None) -> pd.DataFrame:
+def sensitivity_table(
+    dam: DamObject,
+    f: float,
+    level: float,
+    dhdt: float,
+    connectivity: int = 8,
+    steps: dict[str, float] | None = None,
+) -> pd.DataFrame:
     """Central-difference sensitivity of the breach year to each input.
 
     ``steps`` gives the half-step used for each parameter; the defaults are
@@ -88,6 +102,8 @@ def sensitivity_table(dam: DamObject, f: float, level: float, dhdt: float,
         )
     table = pd.DataFrame(rows)
     table["abs_span"] = table["year_span_over_step"].abs()
-    return table.sort_values("abs_span", ascending=False).drop(columns="abs_span").reset_index(
-        drop=True
+    return (
+        table.sort_values("abs_span", ascending=False)
+        .drop(columns="abs_span")
+        .reset_index(drop=True)
     )

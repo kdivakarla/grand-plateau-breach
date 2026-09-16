@@ -1,9 +1,10 @@
-# Phase 1 pipeline. Run from the repository root:  make -f workflow/Makefile all
+# Phase 1 pipeline. Run from the repository root, with the gpbreach env active:
+#     conda activate gpbreach && make -f workflow/Makefile all
 PY      ?= python
 CONFIGS := configs/baseline_breach1_lgp.yaml configs/baseline_breach2_alsek.yaml
 DAMS    := data/processed/dam_breach1_lgp.npz data/processed/dam_breach2_alsek.npz
 
-.PHONY: all preprocess run test sensitivity fcurve clean
+.PHONY: all preprocess run test lint sensitivity fcurve map clean
 
 all: run test
 
@@ -18,8 +19,15 @@ run: preprocess
 sensitivity: preprocess
 	@for c in $(CONFIGS); do $(PY) -m gpbreach.cli sensitivity $$c; done
 
+map: preprocess
+	@for c in $(CONFIGS); do $(PY) -m gpbreach.cli map $$c; done
+
 fcurve: preprocess
 	@for c in $(CONFIGS); do $(PY) -m gpbreach.cli fcurve $$c; done
+
+lint:
+	ruff check .
+	ruff format --check .
 
 # Prefers pytest; falls back to the no-pytest runner (see environment.yml).
 test: preprocess

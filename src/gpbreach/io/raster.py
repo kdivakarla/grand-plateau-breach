@@ -79,7 +79,7 @@ def _finalise(values: np.ndarray, nodata: float | None) -> np.ndarray:
 
 
 def _read_rasterio(path: Path) -> RasterData:
-    import rasterio  # noqa: PLC0415
+    import rasterio
 
     with rasterio.open(path) as src:
         t = src.transform
@@ -92,7 +92,7 @@ def _read_rasterio(path: Path) -> RasterData:
 
 
 def _read_gdal(path: Path) -> RasterData:
-    from osgeo import gdal  # noqa: PLC0415
+    from osgeo import gdal
 
     gdal.UseExceptions()
     ds = gdal.Open(str(path))
