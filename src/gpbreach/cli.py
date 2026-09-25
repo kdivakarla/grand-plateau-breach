@@ -24,6 +24,7 @@ from .analysis.sensitivity import sensitivity_table
 from .config import Config, repo_root
 from .dam import DamObject
 from .engine import run as run_engine
+from .io import atl06 as _atl06
 from .io.atl13 import granule_info, read_segments, summarise_water_bodies
 from .preprocess.build_dam import build_dam, find_basin_seeds
 
@@ -124,6 +125,42 @@ def cmd_fcurve(args) -> int:
         yr = dam.base_year + (phi - level) / (-f_value * dhdt)
         mark = "  <- nominal" if abs(f_value - nominal) < args.spacing / 2 else ""
         print(f"  {f_value:.4f}  {(1 - f_value) / f_value:.4f}  {phi:10.3f}  {yr:11.2f}{mark}")
+    return 0
+
+
+def cmd_atl06(args) -> int:
+    """Report ATL06 datums and quality, screened by default."""
+    info = _atl06.granule_info(args.granule)
+    print(info.describe())
+
+    bbox = tuple(args.bbox) if args.bbox else None
+    if args.bands:
+        bands = [(args.bands[i], args.bands[i + 1]) for i in range(0, len(args.bands) - 1)]
+        print("\n  Quality by latitude band (before trusting or discarding a granule):")
+        print(_atl06.quality_by_band(args.granule, bands).to_string(index=False))
+
+    raw = _atl06.read_segments(args.granule, bbox=bbox, quality_only=False)
+    good = _atl06.read_segments(args.granule, bbox=bbox, quality_only=True)
+    where = f" in bbox {bbox}" if bbox else ""
+    print(f"\n  {len(raw)} segments{where}; {len(good)} survive quality screening")
+    if raw.empty:
+        return 0
+    if good.empty:
+        print("\n  WARNING: nothing survived. The heights in this area are present but")
+        print("  unusable -- almost always cloud. Check the band table above: if a")
+        print("  neighbouring band passes, the granule is fine and this area is clouded.")
+        print(f"  Median |h_li - dem_h| here: {raw.vs_dem.abs().median():.1f} m")
+        return 0
+    print(f"    h_li (WGS84 ellipsoid, ITRF2014)  median {good.h_li.median():9.3f} m")
+    print(f"    geoid_h ({info.tide_system})         median {good.geoid_h.median():9.3f} m")
+    print(f"    h_ortho (EGM2008)                 median {good.h_ortho.median():9.3f} m")
+    if args.geoid12 is not None:
+        est = good.h_li.median() - args.geoid12
+        print(f"    NAVD88 estimate                   median {est:9.3f} m (GEOID12 {args.geoid12})")
+    print(f"    h_li_sigma median {good.h_li_sigma.median():.3f} m")
+    if args.csv:
+        good.to_csv(args.csv, index=False)
+        print(f"\n  wrote {args.csv}  ({len(good)} screened segments)")
     return 0
 
 
@@ -242,6 +279,16 @@ def main(argv: list[str] | None = None) -> int:
     sp.add_argument("--f-max", type=float, default=0.98)
     sp.add_argument("--spacing", type=float, default=0.005)
     sp.set_defaults(func=cmd_fcurve)
+
+    sp = sub.add_parser("atl06", help="report ATL06 datums, quality and heights")
+    sp.add_argument("granule")
+    sp.add_argument("--bbox", nargs=4, type=float, metavar=("LON0", "LAT0", "LON1", "LAT1"))
+    sp.add_argument(
+        "--bands", nargs="+", type=float, help="latitude breakpoints for the quality-by-band table"
+    )
+    sp.add_argument("--geoid12", type=float, help="GEOID12 height (m) for a NAVD88 estimate")
+    sp.add_argument("--csv", help="write screened segments here")
+    sp.set_defaults(func=cmd_atl06)
 
     sp = sub.add_parser("atl13", help="report ATL13 datums and the lakes a granule covers")
     sp.add_argument("granule", help="path to an ATL13 .h5 granule")

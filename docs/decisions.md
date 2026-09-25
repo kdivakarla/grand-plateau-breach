@@ -206,6 +206,34 @@ alongside, but **verify with the same read-it-from-the-file approach** rather
 than assuming — that is what `gpbreach atl13` does and what an ATL06 reader
 should do too.
 
+**ATL06 outcome, 2026-09-25.** `ATL06_20260719090121_05403202_007_01.h5`
+(RGT 0540, cycle 32) was obtained. Its declared reference, read from the file:
+`h_li` is **WGS 84 ellipsoid, ITRF2014**, and `dem/geoid_h` is EGM2008 **in the
+tide-free system** — the opposite tide convention to ATL13's mean-tide
+`segment_geoid`. NAVD88/GEOID12 is tide-free, so ATL06 matches it and ATL13 does
+not; each product carries its own `geoid_free2mean` and they apply it in
+opposite directions.
+
+**ATL06 works over water here.** Over ATL13's water body 5001, on the same track
+and the same day, ATL06 returns 159/167 and 134/145 good-quality segments and
+agrees with ATL13 to **0.10–0.25 m** (32.50 / 32.64 m vs 32.745 m ellipsoid).
+That cross-validates both products and removes any doubt that the land-ice
+product can measure a lake surface.
+
+**But this granule is unusable over the study area.** Of the 1382 segments
+between 58.95 N and 59.13 N — the analysis domain — **zero** pass
+`atl06_quality_summary`, and the median disagreement with ATL06's own reference
+DEM is **597 m**. Band statistics show why: 52% good north of 59.13 N and 92%
+good south of 58.70 N, but 0% good across 58.70–59.13 N, with `cloud_flg_atm`
+rising from 0 to 1 over exactly that interval. It is cloud, not terrain, not
+water, and not the track. A different date is required; no processing choice
+recovers these heights.
+
+**Consequence for the code.** `gpbreach.io.atl06` screens on
+`atl06_quality_summary == 0` **and** `|h_li - dem_h| <= 50 m` by default. Without
+that screen these segments read as plausible numbers and would have implied a
+~700 m elevation error. A regression test asserts they are rejected.
+
 **Available record.** CMR lists 77 ATL06 granules intersecting the lakes on RGTs
 0060, 0502, 0540 and 0982, spanning 2018-10-31 to 2026-07-19 at roughly nine per
 year. That is enough for a lake-level time series, which would settle the datum

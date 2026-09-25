@@ -35,6 +35,8 @@ and refuses to resample.
 |---|---|---|---|---|---|---|---|
 | ATL13 v007 inland water | lake surface elevation | `data/raw/ICESat-Inland-lake-elevations/` | HDF5 | EPSG:4326 | **WGS84 ellipsoid** (`ht_water_surf`); EGM2008 also provided (`ht_ortho`) — **not NAVD88** | m | Read with `gpbreach atl13`. The 2026-07-19 granule covers **no water inside the analysis domain**; nearest body is 9.2 km north. See D-008 |
 
+| ATL06 v007 land ice | lake + glacier surface elevation | `data/raw/ICESat-Inland-Glaceir-Elevations/` | HDF5 | EPSG:4326 | **WGS84 ellipsoid, ITRF2014**; `dem/geoid_h` is EGM2008 **tide-free** | m | Read with `gpbreach atl06`. **Quality screening is mandatory** — the 2026-07-19 granule is 0% usable over the domain (cloud). 77 granules available 2018–2026 on RGTs 0060/0502/0540/0982 |
+
 ## Later phases (not needed for Phase 1)
 
 | Dataset | Use | Notes |
