@@ -29,6 +29,12 @@ and refuses to resample.
 | `outletStrengthCalculations/outletOutline.gpkg` | outlet geometry | repo parent | GPKG | ESRI:102247 | n/a | — | 1 polygon, extent lies **outside** the raster domain |
 | `first-attempt-clipped.tif` | ? | repo parent | GeoTIFF | ? | ? | m | unclear role |
 
+## ICESat-2
+
+| Dataset | Use | Location | Format | Horizontal CRS | Vertical datum | Units | Notes |
+|---|---|---|---|---|---|---|---|
+| ATL13 v007 inland water | lake surface elevation | `data/raw/ICESat-Inland-lake-elevations/` | HDF5 | EPSG:4326 | **WGS84 ellipsoid** (`ht_water_surf`); EGM2008 also provided (`ht_ortho`) — **not NAVD88** | m | Read with `gpbreach atl13`. The 2026-07-19 granule covers **no water inside the analysis domain**; nearest body is 9.2 km north. See D-008 |
+
 ## Later phases (not needed for Phase 1)
 
 | Dataset | Use | Notes |

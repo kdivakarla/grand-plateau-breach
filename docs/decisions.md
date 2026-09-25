@@ -163,6 +163,44 @@ and changes neither headline date.
   a physics/input change and needs owner approval; the baseline currently applies
   **no** correction, matching the owner's original rasters.
 
+### ICESat-2 ATL13 evidence, 2026-09-25
+Granule `ATL13_20260719041126_05373201_007_01.h5` (v007, acquired 2026-07-19),
+read with `gpbreach atl13`. Its own dataset attributes declare:
+
+| field | declared reference |
+|---|---|
+| `ht_water_surf` | **WGS84 ellipsoid** |
+| `ht_ortho` | **EGM2008** orthometric |
+| `segment_geoid` | EGM2008 geoid, **mean-tide** system |
+
+**EGM2008 is not NAVD88.** At 59.2318 N, 138.0970 W the granule's EGM2008 geoid
+is 8.679 m while NOAA's GEOID12A is 7.483 m — a **1.196 m** disagreement. Using
+`ht_ortho` as if it were NAVD88 would inject ~1.2 m of lake-level error, i.e.
+~0.14 yr of breach date. Two further caveats on any conversion: ICESat-2 is
+ITRF2014 while GEOID12 expects NAD83 (order a metre in Alaska, needs HTDP/NCAT
+to do properly), and ATL13's geoid is mean-tide while NAVD88 is tide-free
+(`segment_geoid_free2mean` = -0.155 m here).
+
+**This granule does not resolve the project's lake levels.** It covers no water
+inside the analysis domain: the nearest water body (id 5001, 225 segments across
+gt1l/gt1r) sits 9.2 km north of the raster's north edge, at Albers
+(895657–896715, 1132150–1135086). Identity unconfirmed — the owner should say
+whether it is the northern body of Alsek Lake. Its surface was 32.745 m
+ellipsoid / 24.073 m EGM2008 / ~25.26 m NAVD88-estimated in July 2026.
+
+Sampling `outletStrengthCalculations/DSM_N5900W13815.tif` at those same 225
+points returns **exactly 21.000 m at every point** (sd 0.000) — a water-flattening
+constant in the IFSAR product, not a measured surface. So that comparison cannot
+be used as a datum test, and no IFSAR-vs-ICESat offset should be inferred from
+the -3.1 m (vs EGM2008) or -4.3 m (vs NAVD88 estimate) differences: they mix
+datum, real lake-level change since the IFSAR epoch, and the flattening artifact.
+
+**Still open.** To close D-008 for the lake levels we need ICESat-2 coverage of
+Grand Plateau Lake and of the modelled Alsek basin, not this granule. Note also
+that the 110 m and 17 m values were reverse-engineered from the owner's rasters;
+if they were read off an IFSAR-based QGIS project they are NAVD88, but that has
+never been confirmed.
+
 ### Aside — a fill-value trap in the IFSAR raster
 `2010_IFSAR_GLACIER_SURFACE_CLIPPED.tif` has **no nodata flag set** and uses
 `0.0` as fill for 3,570,204 of its 6,347,328 cells (56%). None of them fall

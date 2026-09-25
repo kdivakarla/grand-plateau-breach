@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 from .analysis.fcurve import build_fcurve
 from .analysis.maps import breach_map
@@ -23,6 +24,7 @@ from .analysis.sensitivity import sensitivity_table
 from .config import Config, repo_root
 from .dam import DamObject
 from .engine import run as run_engine
+from .io.atl13 import granule_info, read_segments, summarise_water_bodies
 from .preprocess.build_dam import build_dam, find_basin_seeds
 
 
@@ -125,6 +127,43 @@ def cmd_fcurve(args) -> int:
     return 0
 
 
+def cmd_atl13(args) -> int:
+    """Report the declared datums of an ATL13 granule and the lakes it covers."""
+    info = granule_info(args.granule)
+    print(info.describe())
+
+    bbox = tuple(args.bbox) if args.bbox else None
+    df = read_segments(args.granule, bbox=bbox)
+    if df.empty:
+        where = f" in bbox {bbox}" if bbox else ""
+        print(f"\nNo water-surface segments found{where}.")
+        return 0
+
+    table = summarise_water_bodies(df, geoid12_height_m=args.geoid12)
+    print(
+        f"\n  {len(df)} segments, {len(table)} water bodies" + (f" in bbox {bbox}" if bbox else "")
+    )
+    print("\n  Elevations are MEDIANS per water body, in metres.")
+    cols = ["water_body_id", "n_segments", "lat", "lon", "ellipsoid_m", "egm2008_m", "sd_m"]
+    if args.geoid12 is not None:
+        cols.insert(-1, "navd88_est_m")
+    with pd.option_context("display.width", 140, "display.max_columns", 20):
+        print(table[cols].to_string(index=False, float_format=lambda v: f"{v:10.3f}"))
+
+    print("\n  Reminder: ht_ortho is EGM2008, which is NOT NAVD88. In Alaska the")
+    print("  two geoid models differ by of order a metre; see D-008 and the")
+    print("  gpbreach.io.atl13 docstring before combining with the IFSAR surface.")
+    if args.geoid12 is None:
+        print("\n  Pass --geoid12 <metres> for an approximate NAVD88 column. Get the")
+        print("  value from NOAA, e.g.:")
+        print("    https://geodesy.noaa.gov/api/geoid/ght?lat=<lat>&lon=<lon>&model=12")
+
+    if args.csv:
+        df.to_csv(args.csv, index=False)
+        print(f"\n  wrote {args.csv}  ({len(df)} segments)")
+    return 0
+
+
 def cmd_map(args) -> int:
     cfg = Config.load(args.config)
     dam = _load_dam(cfg)
@@ -203,6 +242,23 @@ def main(argv: list[str] | None = None) -> int:
     sp.add_argument("--f-max", type=float, default=0.98)
     sp.add_argument("--spacing", type=float, default=0.005)
     sp.set_defaults(func=cmd_fcurve)
+
+    sp = sub.add_parser("atl13", help="report ATL13 datums and the lakes a granule covers")
+    sp.add_argument("granule", help="path to an ATL13 .h5 granule")
+    sp.add_argument(
+        "--bbox",
+        nargs=4,
+        type=float,
+        metavar=("LON0", "LAT0", "LON1", "LAT1"),
+        help="restrict to a lon/lat box",
+    )
+    sp.add_argument(
+        "--geoid12",
+        type=float,
+        help="GEOID12 height (m) at the site, for an approximate NAVD88 column",
+    )
+    sp.add_argument("--csv", help="write the per-segment table here")
+    sp.set_defaults(func=cmd_atl13)
 
     sp = sub.add_parser("map", help="render the breach pathway and export it for QGIS")
     sp.add_argument("config")
