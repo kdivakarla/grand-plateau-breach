@@ -181,25 +181,40 @@ ITRF2014 while GEOID12 expects NAD83 (order a metre in Alaska, needs HTDP/NCAT
 to do properly), and ATL13's geoid is mean-tide while NAVD88 is tide-free
 (`segment_geoid_free2mean` = -0.155 m here).
 
-**This granule does not resolve the project's lake levels.** It covers no water
-inside the analysis domain: the nearest water body (id 5001, 225 segments across
-gt1l/gt1r) sits 9.2 km north of the raster's north edge, at Albers
-(895657–896715, 1132150–1135086). Identity unconfirmed — the owner should say
-whether it is the northern body of Alsek Lake. Its surface was 32.745 m
-ellipsoid / 24.073 m EGM2008 / ~25.26 m NAVD88-estimated in July 2026.
+**The granule is the right one; ATL13 is the wrong product.** The file is named
+for RGT 0537 but spans ~6.3 h of orbit and actually contains RGTs 537-540. **RGT
+540 crosses the site**: fitted from its own nearby segments, beam pair gt1
+passes **0.41 km** west of Grand Plateau Lake and **0.47 km** west of the modelled
+Alsek basin; gt3 passes 1.4 km from the upper LGP lake. CMR independently
+confirms ATL06/ATL03 granules on RGT 0540 intersect a tight box on the lakes.
 
-Sampling `outletStrengthCalculations/DSM_N5900W13815.tif` at those same 225
-points returns **exactly 21.000 m at every point** (sd 0.000) — a water-flattening
-constant in the IFSAR product, not a measured surface. So that comparison cannot
-be used as a datum test, and no IFSAR-vs-ICESat offset should be inferred from
-the -3.1 m (vs EGM2008) or -4.3 m (vs NAVD88 estimate) differences: they mix
-datum, real lake-level change since the IFSAR epoch, and the flattening artifact.
+Yet ATL13 reports **zero water segments on all six beams** between 58.95 N and
+59.20 N — precisely the band holding Grand Plateau Lake (59.0346 N) and the
+Alsek basin (59.1187 N). The nearest reported water is 20 km away.
 
-**Still open.** To close D-008 for the lake levels we need ICESat-2 coverage of
-Grand Plateau Lake and of the modelled Alsek basin, not this granule. Note also
-that the 110 m and 17 m values were reverse-engineered from the owner's rasters;
-if they were read off an IFSAR-based QGIS project they are NAVD88, but that has
-never been confirmed.
+The cause is ATL13's reference water mask. Every water body it does report here
+carries `inland_water_body_source = 1` (**HydroLAKES**), a static global lake
+database that does not contain these ice-dammed proglacial lakes. No ATL13
+granule on any RGT will help until that mask includes them.
+
+**Use ATL06 (land ice height) instead**, which is masked to glacier ice rather
+than to a lake inventory and therefore does cover them. The matching granule for
+the same day and track is `ATL06_20260719090121_05403202_007_01.h5` (RGT 0540,
+cycle 32). ATL03 is the fallback if ATL06 turns out to be masked out over open
+water. ATL06 heights are expected to be WGS84 ellipsoid with a geoid field
+alongside, but **verify with the same read-it-from-the-file approach** rather
+than assuming — that is what `gpbreach atl13` does and what an ATL06 reader
+should do too.
+
+**Available record.** CMR lists 77 ATL06 granules intersecting the lakes on RGTs
+0060, 0502, 0540 and 0982, spanning 2018-10-31 to 2026-07-19 at roughly nine per
+year. That is enough for a lake-level time series, which would settle the datum
+question and also feed the Breach 1 to Breach 2 cascade work directly.
+
+**Note on the earlier comparison.** Sampling the IFSAR DSM at the ICESat points
+of water body 5001 returns exactly 21.000 m everywhere (sd 0.000) — an IFSAR
+water-flattening constant, not a measurement. No datum offset can be read from
+it, and body 5001 is 9.2 km north of the raster anyway, identity unconfirmed.
 
 ### Aside — a fill-value trap in the IFSAR raster
 `2010_IFSAR_GLACIER_SURFACE_CLIPPED.tif` has **no nodata flag set** and uses
