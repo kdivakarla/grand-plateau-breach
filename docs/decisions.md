@@ -327,3 +327,33 @@ lower saddle than the ones driving the 2030 and 2035 dates. The RGI outlines now
 give an objective boundary against which to test that, should the owner want the
 rasters re-clipped.
 
+## D-012 — The four lake-terminating glaciers
+- Date: 2026-09-27
+- Decided by: owner identified them by eye; **selection below is Claude Code's
+  match to RGI ids and needs owner confirmation against imagery**
+- Context: the owner wants the four glaciers in contact with the three lakes —
+  Grand Plateau, the glacier north of it, and two calving into the NE arm of
+  Alsek Lake.
+- Method: filtered the 234-glacier subset to area > 5 km² and zmin < 200 m, then
+  ranked by polygon distance to each lake reference (upper LGP lake polygon,
+  Grand Plateau basin seed, and the ICESat-2 track across Alsek Lake).
+
+| rgi_id | name | area | zmin | lake |
+|---|---|---|---|---|
+| `-01-27357` | Grand Plateau Glacier | 237.25 km² | 21.9 m | Grand Plateau Lake |
+| `-01-17002` | unnamed (Loso: GP North) | 182.55 km² | 19.0 m | GP / upper lake |
+| `-01-16987` | unnamed | 115.28 km² | 21.6 m | Alsek Lake (NE) |
+| `-01-16980` | Alsek Glacier | 107.86 km² | 23.8 m | Alsek Lake (NE) |
+
+All four terminate between **19.0 and 23.8 m**, consistent with calving into
+lakes whose surfaces sit near 17–25 m — the strongest evidence for the
+selection. `-01-16966` (40 km²) is closer to Alsek Lake than two of the four but
+has zmin 63 m, well above the water surface, so it was rejected as not calving.
+Confirm the NE-arm pair against Sentinel-2 before relying on it.
+
+- **All four carry `src_date = 2010-09-15`.** Despite the "RGI2000" name these
+  outlines are 2010 imagery — the same epoch as the IFSAR DEM, which is
+  convenient, but ~16 years stale at the calving fronts.
+- `workflow/trim_termini.py` applies an owner-digitised cut; it neither detects
+  nor guesses a terminus, since that is an input decision (Section 2.2).
+

@@ -24,10 +24,21 @@ SHP = ROOT / "data/raw/RGI7_Alaska/RGI2000-v7.0-G-01_alaska.shp"
 REFERENCE_RASTER = ROOT / "../2010_IFSAR_GLACIER_SURFACE_CLIPPED.tif"
 OUT_DIR = ROOT / "data/interim"
 
-#: The two glaciers damming the lakes, per Loso's DiffStats files.
+#: The four glaciers in contact with the three lakes of the system.
+#: Identified by combining size, terminus elevation and proximity: all four
+#: terminate between 19 and 24 m, consistent with calving into lakes whose
+#: surfaces sit near 17-25 m. Owner to confirm against imagery (D-012).
+LAKE_TERMINATING = {
+    "RGI2000-v7.0-G-01-27357": "Grand Plateau Glacier -> Grand Plateau Lake",
+    "RGI2000-v7.0-G-01-17002": "Grand Plateau North (unnamed) -> GP / upper lake",
+    "RGI2000-v7.0-G-01-16980": "Alsek Glacier -> Alsek Lake (NE)",
+    "RGI2000-v7.0-G-01-16987": "unnamed 115 km2 -> Alsek Lake (NE)",
+}
+#: Kept for the earlier two-glacier product.
 GRAND_PLATEAU = {
-    "RGI2000-v7.0-G-01-17002": "Grand Plateau North (unnamed in RGI)",
-    "RGI2000-v7.0-G-01-27357": "Grand Plateau Glacier",
+    k: v
+    for k, v in LAKE_TERMINATING.items()
+    if k in ("RGI2000-v7.0-G-01-17002", "RGI2000-v7.0-G-01-27357")
 }
 
 
@@ -70,6 +81,8 @@ def main() -> int:
     g["dist_to_domain_km"] = g.distance(domain.geometry.iloc[0]) / 1000.0
     g["is_grand_plateau"] = g.rgi_id.isin(GRAND_PLATEAU)
     g["gp_label"] = g.rgi_id.map(GRAND_PLATEAU)
+    g["is_lake_terminating"] = g.rgi_id.isin(LAKE_TERMINATING)
+    g["lake_label"] = g.rgi_id.map(LAKE_TERMINATING)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     out = OUT_DIR / f"rgi7_grand_plateau_{int(args.buffer_km)}km.gpkg"
@@ -79,18 +92,28 @@ def main() -> int:
     gp_out = OUT_DIR / "rgi7_grand_plateau_dams.gpkg"
     gp.to_file(gp_out, layer="dam_glaciers", driver="GPKG")
 
+    four = g[g.is_lake_terminating]
+    four_out = OUT_DIR / "rgi7_lake_terminating_4.gpkg"
+    four.to_file(four_out, layer="lake_terminating", driver="GPKG")
+    missing = set(LAKE_TERMINATING) - set(four.rgi_id)
+    if missing:
+        raise SystemExit(f"expected glaciers not found in the subset: {sorted(missing)}")
+
     print(f"CRS out   : {albers.to_string()}")
     print(f"halo      : {args.buffer_km:.0f} km around the analysis domain")
     print(f"wrote     : {out}   ({len(g)} glaciers)")
     print(f"            {gp_out}   ({len(gp)} dam glaciers)")
+    print(f"            {four_out}   ({len(four)} lake-terminating)")
     print(f"  overlapping the domain itself : {int(g.in_domain.sum())}")
     print(f"  total area in subset          : {g.area_km2.sum():,.1f} km2")
-    print("\n  the two dam glaciers:")
-    for _, r in gp.iterrows():
+    print("\n  the four lake-terminating glaciers:")
+    for _, r in four.sort_values("area_km2", ascending=False).iterrows():
         print(
-            f"    {r.rgi_id}  {r.gp_label:36s} {r.area_km2:8.2f} km2  "
-            f"z {r.zmin_m:.0f}-{r.zmax_m:.0f} m"
+            f"    {r.rgi_id}  {r.area_km2:7.2f} km2  z {r.zmin_m:5.1f}-{r.zmax_m:.0f} m  "
+            f"src {str(r.src_date)[:10]}  {r.lake_label}"
         )
+    print("\n  RGI src_date is 2010 for all four, so these outlines predate the")
+    print("  current terminus by ~16 yr. Trim with: python workflow/trim_termini.py")
     return 0
 
 
