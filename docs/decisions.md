@@ -284,3 +284,46 @@ its own, must mask zeros explicitly or it will read 0 m fill as real ground.
 - This is a numerical device, not a physics change, but it is recorded here
   because it sits between the sampler and the answer. The engine does **not**
   use it by default — it solves exactly, once per distinct `f`.
+
+## D-011 — RGI 7.0 Alaska glacier outlines added as an input
+- Date: 2026-09-27
+- Decided by: owner — **approved by direct request 2026-09-27**
+- Context: the owner asked for RGI v7 outlines near Grand Plateau for manual
+  analysis. Downloading a dataset and writing to `data/raw/` are both
+  stop-and-ask items (CLAUDE.md Section 2.2); the request is the approval.
+- Decision: downloaded `RGI2000-v7.0-G-01_alaska.zip` (83 MB, 27,509 glaciers)
+  from the NSIDC DAAC to `data/raw/RGI7_Alaska/`, using the Earthdata
+  credentials already in the owner's `~/.netrc`. Nothing else in `data/raw/`
+  was touched. `workflow/subset_rgi.py` writes a reprojected local subset to
+  `data/interim/`; it never writes to `data/raw/`.
+- Citation: RGI 7.0 Consortium, 2023. Randolph Glacier Inventory Version 7.0.
+  NSIDC. doi:10.5067/f6jmovy5navz
+- Source CRS EPSG:4326; the subset is reprojected to ESRI:102247 per D-009.
+
+### The two dam glaciers
+| RGI id | name | area | z range |
+|---|---|---|---|
+| `RGI2000-v7.0-G-01-17002` | unnamed in RGI; Loso's "Grand Plateau North" | 182.55 km² | 19–3219 m |
+| `RGI2000-v7.0-G-01-27357` | **Grand Plateau Glacier** | 237.25 km² | 22–4643 m |
+
+Both are `term_type = 9`. Neighbours within 20 km include Alsek (`-16980`),
+Melbern (`-17004`), Fairweather (`-27011`) and Ferris (`-27355`); 234 glaciers
+totalling 2,367 km² are in the subset.
+
+### What this says about D-005
+Clipping the two RGI polygons against the project rasters:
+
+| glacier | inside the analysis domain | fraction of the glacier |
+|---|---|---|
+| `-17002` | 14.54 km² | **8 %** |
+| `-27357` | 54.08 km² | **23 %** |
+
+Their combined 68.6 km² is essentially the whole modelled domain (69.3 km² of
+valid bedrock), which confirms the domain *is* these two glaciers and nothing
+else. But **77–92 % of each glacier lies outside the clip.** That is direct
+evidence for the residual concern recorded under D-005: the flotation basins are
+truncated by the raster extent, and a wider clip could in principle expose a
+lower saddle than the ones driving the 2030 and 2035 dates. The RGI outlines now
+give an objective boundary against which to test that, should the owner want the
+rasters re-clipped.
+

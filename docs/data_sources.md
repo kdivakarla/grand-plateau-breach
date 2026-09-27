@@ -37,6 +37,8 @@ and refuses to resample.
 
 | ATL06 v007 land ice | lake + glacier surface elevation | `data/raw/ICESat-Inland-Glaceir-Elevations/` | HDF5 | EPSG:4326 | **WGS84 ellipsoid, ITRF2014**; `dem/geoid_h` is EGM2008 **tide-free** | m | Read with `gpbreach atl06`. **Quality screening is mandatory** — the 2026-07-19 granule is 0% usable over the domain (cloud). 77 granules available 2018–2026 on RGTs 0060/0502/0540/0982 |
 
+| RGI 7.0 region 01 (Alaska) | glacier outlines | `data/raw/RGI7_Alaska/` | Shapefile + CSV | **EPSG:4326** | n/a (outlines) | — | 27,509 glaciers, 83 MB. doi:10.5067/f6jmovy5navz. Subset to `data/interim/` in ESRI:102247 via `workflow/subset_rgi.py`. Dam glaciers are `-01-17002` and `-01-27357` (D-011) |
+
 ## Later phases (not needed for Phase 1)
 
 | Dataset | Use | Notes |
