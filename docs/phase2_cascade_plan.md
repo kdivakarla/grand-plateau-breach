@@ -137,10 +137,27 @@ this is a structural preference, not a correctness issue.
 Following the spec's build order, with prerequisites inserted. One milestone per
 session, each confirmed against its tests before the next.
 
-**M0 — Grid and inputs (prerequisite, owner-led)**
-Decide the canonical grid; produce the ice surface raster; extend the footprint
-to contain the three lakes. Mostly QGIS work on your side; I can write the
-extraction/reprojection script if useful. *Blocks everything below.*
+**M0 — Grid and inputs — DONE 2026-10-03.**
+`gpbreach.cascade.grid` + `build_grid`. Canonical grid is `bed_ellip.tif`'s:
+5 m, ESRI:102247, extended to 5018 x 5854 cells (25.09 x 29.27 km, 29.4 M) with a
+500 m halo, phase-aligned to the original (integer cell offset, so existing 5 m
+products stay pixel-compatible). All three lakes now 100 % captured. Classes are
+**rasterised from the outlines**, not resampled — resampling cannot extend a
+raster — and agree with the original `classes.tif` at 100.000 % over its
+footprint. Outputs in `data/standard/` with `grid_manifest.json`.
+
+Outstanding from M0, for the owner:
+- The **bed covers only 30.4 %** of ice cells on the extended grid (it is still
+  the original clip). A pass-search route between LGP and GPL does exist within
+  that coverage (verified: one connected traversable component, 110.9 km²), so
+  M2 is not blocked — but `competing_outlets` toward Alsek probably is.
+- **2,237 cells have negative ice thickness** (surface below bed, to −33.9 m).
+  `max(z_s − z_b, 0)` absorbs them, but they indicate bed/surface inconsistency
+  worth a look.
+- `head_2018.tif` / `margin_2018_lgp.tif` are 2497 cols at 4.999597 x 5.000177 m
+  with a 2.1 m origin offset, and the surface rasters have anisotropic
+  2.382 x 1.288 m pixels. All are regularised onto the canonical grid now, but
+  regenerate them from `data/standard/` before using them as cross-checks.
 
 **M1 — Scaffold.** `cascade/` package, `config/data.yaml` + `params.yaml` in the
 spec's schema, `io` extensions (class raster reader, grid-consistency assertion
