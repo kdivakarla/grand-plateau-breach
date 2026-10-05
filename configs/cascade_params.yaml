@@ -1,0 +1,14 @@
+# Cascade physics parameters. Protected path (CLAUDE.md 2.4) -- changing any of
+# these is a physics change and needs owner approval.
+k: 1.0                  # flotation factor; 1.0 = pure flotation (spec default)
+smoothing_m: 0          # masked Gaussian sigma, metres; 0 = off (spec default)
+connectivity: 8         # 4 available as a conservative check
+source_class: 3         # GPL -- search is seeded here
+target_class: 2         # LGP -- h_pass is read here
+
+conduit:                # not used until M6
+  manning_n: 0.08
+  S0_m2: 0.1
+  lake_temp_C: 0.5
+  A: 2.4e-24
+  n_glen: 3

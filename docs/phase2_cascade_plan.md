@@ -164,7 +164,11 @@ spec's schema, `io` extensions (class raster reader, grid-consistency assertion
 across bed/surface/classes), output sidecars, pytest wiring. Deliverable: a
 config that loads and validates, with a clear error naming any missing input.
 
-**M2 — `seal.py`.** Priority-flood pass search returning spill + parent arrays;
+**M2 — `seal.py` — DONE 2026-10-05.** See D-013. 16 toy tests plus the
+equivalence test; 2018 run gives h_pass 233.262 m, Δ +115.96 m, pass 277 m from
+the Phase 1 breach point. Found a 6.7 m datum mismatch in the QGIS margin map.
+
+*(original scope)* Priority-flood pass search returning spill + parent arrays;
 `head_surface` reusing `flotation_field`; class barriers; `masked_smooth`;
 `overtopping_search`; `competing_outlets`. Toy-grid tests first (spec's table),
 then: **an equivalence test asserting the new head/pass code reproduces

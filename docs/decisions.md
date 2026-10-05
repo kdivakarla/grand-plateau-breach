@@ -357,3 +357,49 @@ Confirm the NE-arm pair against Sentinel-2 before relying on it.
 - `workflow/trim_termini.py` applies an owner-digitised cut; it neither detects
   nor guesses a terminus, since that is an input decision (Section 2.2).
 
+## D-013 — Cascade seal module, and a datum mismatch in the QGIS margin map
+- Date: 2026-10-05
+- Decided by: owner supplied the lake levels; the finding below is Claude Code's
+  and needs the owner's call on which product to correct.
+- Lake levels supplied 2026-10-05, WGS84 ellipsoidal: **LGP 117.3 m, GPL 27.6 m**
+  (Alsek still outstanding, which blocks `competing_outlets`). Their difference,
+  89.7 m, is consistent with the spec's "LGP sits ~100 m above GPL".
+
+### 2018 result (k = 1.0, connectivity 8, no smoothing)
+| quantity | value |
+|---|---|
+| h_pass | **233.262 m** |
+| h_LGP | 117.300 m |
+| Δ = h_pass − h_LGP | **+115.962 m — sealed** |
+| thinning needed at the pass | **126.46 m** |
+| pass cell | (4663, 3710) → map (908597.5, 1112827.5) |
+| overtopping alternative | 253.1 m, so flotation opens first by ~20 m |
+
+The pass sits **277 m** from the Phase 1 breach point for breach 1
+(908752.5, 1112597.5). Those come from independent data — 2010 IFSAR with
+`Bedrock_Aligned` in NAVD88 versus 2018 ArcticDEM with `bed_ellip` in ellipsoidal
+heights — so the agreement is a genuine cross-validation of both.
+
+### The finding: `margin_2018_lgp.tif` mixes vertical datums
+Comparing the pipeline's output with the QGIS rasters over 2.48 M cells:
+
+- **head surfaces agree**: median difference −0.003 m (IQR −0.070 to +0.061). The
+  pipeline reproduces the QGIS head surface.
+- **margins differ by a constant −6.703 m** (IQR −6.77 to −6.64).
+
+Since the heads agree, the whole offset is in the lake level: the QGIS margin was
+built with **h_LGP ≈ 110.60 m**, an orthometric value, against an **ellipsoidal**
+head surface. The gap is the geoid height, ~6.8 m here.
+
+**Consequence.** The QGIS margin map overstates how sealed the dam is by 6.7 m,
+i.e. about 0.74 yr at −9.05 m/yr. The pipeline run is the internally consistent
+one. Recommend regenerating `margin_2018_lgp.tif` from `data/derived/`.
+
+### This also closes an open question under D-008
+D-008 asked which datum the baseline's lake levels of 110.0 m and 17.0 m were
+read in. The new ellipsoidal LGP level is 117.3 m; minus the ~6.8 m geoid that is
+110.5 m, against the baseline's 110.0 m. **The baseline lake levels were NAVD88**,
+consistent with the IFSAR surface they were read from — so the baseline is
+internally consistent after all, and the "lake levels on the other datum" row of
+the D-008 table (−0.83 yr) does not apply. The remaining D-008 item is the bed.
+

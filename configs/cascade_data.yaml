@@ -1,0 +1,35 @@
+# Cascade analysis inputs. Spec calls this config/data.yaml; kept in the repo's
+# existing configs/ directory for consistency. Protected path (CLAUDE.md 2.4).
+run_id: cascade_2018
+
+grid:
+  # Everything must be on this grid. Built by gpbreach.cascade.build_grid.
+  standard_dir: data/standard
+  manifest: data/standard/grid_manifest.json
+
+surfaces:
+  - id: arcticdem_20180903
+    path: data/standard/surf_2018.tif
+    date: 2018-09-03
+    vertical: ellipsoid_wgs84
+    source: ArcticDEM WV02 + WV03 strips, lakes masked, clipped to ice
+
+bed:
+  path: data/standard/bed_ellip.tif
+  vertical: ellipsoid_wgs84
+  source: IfSAR minus Millan thickness; NAVD88 -> ellipsoid via GEOID12B + stable-ground offset
+
+classes: data/standard/classes.tif
+# 0 land, 1 ice, 2 LGP, 3 GPL, 4 Alsek
+class_codes: {land: 0, ice: 1, lgp: 2, gpl: 3, alsek: 4}
+
+outlines:
+  ice: data/processed/ice_2018.gpkg
+  lakes: data/processed/lakes_2018.gpkg
+
+lake_levels:              # metres, WGS84 ellipsoidal
+  lgp: 117.3              # owner 2026-10-05
+  gpl: 27.6               # owner 2026-10-05
+  alsek: null             # TO SUPPLY -- blocks competing_outlets
+
+output_dir: data/derived
