@@ -115,7 +115,6 @@ def main(argv: list[str] | None = None) -> int:
 
     res = pass_search(head, classes, params["source_class"], params["target_class"], conn)
     h_lgp = levels_by_name.get("lgp")
-    h_gpl = levels_by_name.get("gpl")
 
     print(f"\n{'=' * 64}")
     if not res.reached_target:

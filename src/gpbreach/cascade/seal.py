@@ -182,7 +182,7 @@ def pass_search(
 
     nrows, ncols = work.shape
     spill = np.full(work.shape, np.inf, dtype=np.float64)
-    parent = np.full(work.shape + (2,), -1, dtype=np.int32)
+    parent = np.full((*work.shape, 2), -1, dtype=np.int32)
 
     heap: list[tuple[float, int, int]] = []
     for r, c in zip(*np.nonzero(source), strict=True):
