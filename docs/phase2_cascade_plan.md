@@ -183,7 +183,11 @@ its own safety check; needs smoothing to work.
 *(original scope)* `trace_path`, `refine_downstream` (D8 on head), `profile`,
 `summarize`. Outputs: path GeoPackage, profile CSV/PNG, summary JSON.
 
-**M4 — `lakes.py`.** *Requires M0's extended grid.* Bathymetry interpolation,
+**M4 — `lakes.py` — DONE 2026-10-06.** See D-015. V_w bracketed at 78-200 Mm3
+(no LGP bathymetry); spec's 0.5 km3 looks high. GPL spills into an adjoining
+basin above 68 Mm3.
+
+*(original scope)* *Requires M0's extended grid.* Bathymetry interpolation,
 stage curves, `released_volume`, `gpl_stage_area`. Check `V_w` against your
 ~0.5 km³ expectation and explain any gap.
 

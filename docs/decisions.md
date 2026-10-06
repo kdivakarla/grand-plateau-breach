@@ -463,3 +463,56 @@ pass is the crest of a broad near-plateau rather than a sharp saddle. ``h_pass``
 is robust — it is a maximum — but the pass *cell* could move within that plateau
 under small changes to the surface, so do not over-interpret its exact location.
 
+## D-015 — Lake curves, and two things the volume estimate runs into
+- Date: 2026-10-06
+- Decided by: Claude Code (implementation); **two owner decisions needed**
+
+### There is no LGP bathymetry in the repository
+`OIB-and-Hig-depths-merged.gpkg` holds **23** points with a depth value. Sampled
+against the 2018 classes they fall on **GPL (5)** and **ice (18)** — **none in
+LGP**. Depths run 0–275 m with 275 the censored cap. So the plumb-line survey
+covers Grand Plateau Lake, not the upper lake, and `interpolate_bathymetry` has
+nothing to grid for LGP.
+
+V_w is therefore reported as a **bracket**, not a number:
+
+| bound | basin shape | V_w |
+|---|---|---|
+| upper | vertical walls (area constant with depth) | **200.0 Mm³** |
+| lower | conic (deepest at centre) | **77.9 Mm³** |
+
+A real basin lies between them. Drawdown is 117.3 → 58.71 m = 58.59 m, the bed
+sill controlling (D-014).
+
+**The spec's ~0.5 km³ expectation looks too high.** The vertical-wall bound is a
+hard ceiling at 0.200 km³, and even draining all the way to GPL's level rather
+than the sill only reaches 0.306 km³. Reaching 500 Mm³ over this drawdown would
+need **8.53 km²** of lake against the **3.414 km²** digitised. Either the outline
+is too small, the expectation came from a different drawdown, or the figure needs
+revisiting. **Owner decision 1.**
+
+### GPL spills into an adjoining basin before it can absorb the flood
+Its stage curve is not smooth. GPL's own basin holds **68 Mm³**, rising 1.50 m to
+29.10 m. Between 29.1 and 29.6 m the connected area jumps **45.4 → 61.8 km²** and
+absorbs a further **309 Mm³** for almost no extra rise: the lake tops a divide
+into an adjoining depression. It does **not** connect to Alsek or LGP at these
+stages.
+
+Both V_w bounds (78 and 200 Mm³) exceed GPL's own 68 Mm³ capacity, so on this
+geometry the flood spills laterally. **Owner decision 2:** whether the routing
+stage should treat that adjoining basin as part of GPL, or as a separate
+receiving body.
+
+Reading a stage off the curve across that step is meaningless — it is a
+discontinuity, not a slope. `detect_spill` finds it and the runner refuses to
+interpolate through it. Detection is an outlier test rather than a fixed
+threshold, because a smoothly widening basin gains a large *fraction* of its area
+per step near its floor and a bare cutoff flags ordinary cones.
+
+### A bug worth recording
+The project's surface DEM has lakes masked to NaN. The first version of
+`connected_stage_area` read depth from that DEM, so GPL's 45 km² — much the
+largest term — contributed **zero** volume. Seed cells now take an effective
+elevation of the current lake surface, and a test asserts a masked lake still
+contributes its area times the rise.
+
