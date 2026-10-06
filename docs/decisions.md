@@ -403,3 +403,63 @@ consistent with the IFSAR surface they were read from — so the baseline is
 internally consistent after all, and the "lake levels on the other datum" row of
 the D-008 table (−0.83 yr) does not apply. The remaining D-008 item is the bed.
 
+## D-014 — Drainage path, and why the downstream refinement is not used
+- Date: 2026-10-06
+- Decided by: Claude Code (implementation); **owner to confirm the two choices below**
+
+### 2018 path (k = 1.0, connectivity 8, smoothing 0)
+| quantity | value |
+|---|---|
+| total length LGP → GPL | 10.835 km |
+| L_pass (pass → GPL) | **5.624 km** |
+| bed sill | **58.71 m** at 1.471 km |
+| ⇒ LGP can drain only to max(h_GPL, sill) | **58.71 m** — the sill controls, not GPL |
+| thickness at pass | 336.26 m (min 98.8, mean 268.5) |
+| flotation-zone length | 2.848 km |
+| N at pass / mean over seal / min | +115.96 / +89.07 / −96.44 m |
+
+**The bed sill controls the drawdown, not GPL's level.** LGP drains from 117.3 m
+to 58.71 m, not to 27.6 m — about 58.6 m of drawdown rather than 89.7 m. That
+feeds M4 directly and makes `V_w` materially smaller than a GPL-controlled
+estimate would suggest.
+
+### Choice 1 — representative N defaults to `at_pass`
+The spec left this open. Default is N at the pass (+115.96 m); `--n-mode`
+offers `mean_seal` (+89.07) and `min` (−96.44). The three differ enough to
+matter for the conduit closure term, so this needs an owner decision before M6.
+
+### Choice 2 — the spec's `refine_downstream` is implemented but does not run
+The spec asks for steepest descent on head below the pass, because the minimax
+path there is not unique. On the 2018 geometry that cannot work:
+
+- a raw D8 descent from the pass **stalls after 63 m** in a local minimum;
+- descending the flood-filled surface instead stalls too, on **plateaus** — nine
+  consecutive cells share the value 232.714 m, and a strictly-downhill rule has
+  nowhere to go;
+- a fallback that follows the flood's parent links escapes plateaus but then
+  stalls where the walk strays to the LGP side of the pass, whose parent chain
+  runs back through forbidden upstream cells.
+
+The underlying reason is that the head field is rough: below the pass it rises
+at **288 of 899 steps**, by up to 5.15 m and 103.4 m in total. Strict descent is
+not well posed on it.
+
+`refine_downstream` therefore **verifies it reached GPL and returns the original
+path unchanged if not**, logging a warning. That is not cosmetic: the truncated
+route reported `L_pass` as 0.063 km instead of 5.624 km, an 89-fold error that
+would have gone straight into the conduit model as its length.
+
+So the reported path is the minimax route. It reaches GPL, descends monotonically
+in spill by construction, and falls from 233.26 m to 27.60 m in head.
+
+**For the owner:** the cleanest fix is smoothing. `smoothing_m` is still 0, which
+the spec flagged as an open decision ("start at 0, then test a few ice
+thicknesses"). Smoothing the surface over a few ice thicknesses should make the
+head field well posed for descent and let the refinement run as specified.
+
+### Note on the pass
+Head varies by only 8 m (225.2–233.3) over the 3 km upstream of the pass, so the
+pass is the crest of a broad near-plateau rather than a sharp saddle. ``h_pass``
+is robust — it is a maximum — but the pass *cell* could move within that plateau
+under small changes to the surface, so do not over-interpret its exact location.
+

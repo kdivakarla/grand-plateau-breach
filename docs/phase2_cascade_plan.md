@@ -176,7 +176,11 @@ then: **an equivalence test asserting the new head/pass code reproduces
 halves of the project together and protects both. Then the 2018 run, with Δ and
 pass location compared against your QGIS margin map.
 
-**M3 — `path.py`.** `trace_path`, `refine_downstream` (D8 on head), `profile`,
+**M3 — `path.py` — DONE 2026-10-06.** See D-014. L_pass 5.624 km, bed sill
+58.71 m controls the drawdown. Downstream refinement implemented but disabled by
+its own safety check; needs smoothing to work.
+
+*(original scope)* `trace_path`, `refine_downstream` (D8 on head), `profile`,
 `summarize`. Outputs: path GeoPackage, profile CSV/PNG, summary JSON.
 
 **M4 — `lakes.py`.** *Requires M0's extended grid.* Bathymetry interpolation,
