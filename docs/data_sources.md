@@ -25,9 +25,12 @@ and refuses to resample.
 | `Lidar_Elevation_Loso/DiffStats_GP/*.json` | dh/dt from cop30 2005–2020 | repo parent | JSON | — | — | m | north/south Grand Plateau |
 | `OIB-and-Hig-depths-merged.gpkg` | surface/bed comparison | repo parent | GPKG | EPSG:32607 | **? — confirm in NSIDC user guide**, normally WGS84 ellipsoid | m | 934 points, source `IRUAFHF1B_20140516` (UAF HF radar, 16 May 2014). `surface - bed - thickness` closes to 0.000 m |
 | `FULL-transects-with-avg-OIB-values.csv` | dh/dt source | repo parent | CSV | — | **?** | m | the transects behind the -9.05 m/yr figure |
-| `outletStrengthCalculations/lakePolygon.gpkg` | lake geometry | repo parent | GPKG | EPSG:32607 | n/a | — | 1 polygon; would let D-005 seeds be defined from real lake outlines |
+| `outletStrengthCalculations/lakePolygon.gpkg` | lake geometry | repo parent | GPKG | EPSG:32607 | n/a | — | **SUPERSEDED (D-015).** Upper lake at 5.083 km², undated. Use `data/processed/lakes_2018.gpkg` (3.414 km², Sentinel-2 2018-09-05), which is epoch-consistent with the 2018 ice surface. Referenced nowhere in code or config |
 | `outletStrengthCalculations/outletOutline.gpkg` | outlet geometry | repo parent | GPKG | ESRI:102247 | n/a | — | 1 polygon, extent lies **outside** the raster domain |
 | `first-attempt-clipped.tif` | ? | repo parent | GeoTIFF | ? | ? | m | unclear role |
+
+| `data/processed/lakes_2018.gpkg` | lake outlines, class 2/3/4 | repo | GPKG | ESRI:102247 | n/a | — | Digitised from Sentinel-2 2018-09-05. **The authoritative lake geometry** (D-015). LGP 3.414, GPL 45.342, Alsek 75.610 km² |
+| `data/processed/ice_2018.gpkg` | ice extent | repo | GPKG | ESRI:102247 | n/a | — | The four lake-terminating RGI glaciers (D-012), trimmed |
 
 ## ICESat-2
 

@@ -484,12 +484,34 @@ V_w is therefore reported as a **bracket**, not a number:
 A real basin lies between them. Drawdown is 117.3 → 58.71 m = 58.59 m, the bed
 sill controlling (D-014).
 
-**The spec's ~0.5 km³ expectation looks too high.** The vertical-wall bound is a
-hard ceiling at 0.200 km³, and even draining all the way to GPL's level rather
-than the sill only reaches 0.306 km³. Reaching 500 Mm³ over this drawdown would
-need **8.53 km²** of lake against the **3.414 km²** digitised. Either the outline
-is too small, the expectation came from a different drawdown, or the figure needs
-revisiting. **Owner decision 1.**
+**The spec's ~0.5 km³ expectation is superseded — RESOLVED 2026-10-06.** The
+figure is reproducible, and the decomposition shows exactly what it assumed. Two
+LGP outlines exist in the repo for the same lake (centroids 913 m apart; 98.8 % of
+the 2018 outline lies inside the other):
+
+| outline | area | drain to sill 58.7 m | drain to GPL 27.6 m |
+|---|---|---|---|
+| `lakes_2018.gpkg` class 2 | 3.414 km² | **200 Mm³** | 306 Mm³ |
+| `outletStrengthCalculations/lakePolygon.gpkg` | 5.083 km² | 298 Mm³ | **456 Mm³** |
+
+456 Mm³ ≈ 0.46 km³ is the ~0.5 km³ figure: it used the **larger outline**,
+drainage **all the way to GPL** rather than to the bed sill, and **vertical
+walls**. The bed sill is new information from D-014 that an earlier estimate
+could not have had.
+
+**Owner decision, 2026-10-06: use `lakes_2018`.** Reason given — it is the only
+outline epoch-consistent with the rest of the inputs, which are all 2018: the
+ArcticDEM ice surface (2018-09-03) and the lake outlines digitised from a 2018
+Sentinel-2 scene (2018-09-05). `lakePolygon.gpkg` carries no date or provenance.
+Consistency of epoch across layers outranks any single layer's extent, because
+mixing a lake outline from one year with an ice surface from another silently
+mis-states the dam geometry.
+
+So **V_w = 78–200 Mm³ stands**, and the ~0.5 km³ figure should be retired from the
+spec rather than reconciled.
+
+`lakePolygon.gpkg` is **superseded**; it is referenced nowhere in the code or
+configs, and `data_sources.md` now says so.
 
 ### GPL spills into an adjoining basin before it can absorb the flood
 Its stage curve is not smooth. GPL's own basin holds **68 Mm³**, rising 1.50 m to
