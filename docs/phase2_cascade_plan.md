@@ -191,7 +191,10 @@ basin above 68 Mm3.
 stage curves, `released_volume`, `gpl_stage_area`. Check `V_w` against your
 ~0.5 km³ expectation and explain any gap.
 
-**M5 — `inflow_empirical.py`.** The four relations, both hydrograph shapes,
+**M5 — `inflow_empirical.py` — DONE 2026-10-06.** See D-016. Q_p 815-11,320 m3/s
+across both modes; drainage mode dominates V_w uncertainty 13.9x to 2.6x.
+
+*(original scope)* The four relations, both hydrograph shapes,
 volume-preserving rescale. Spec gives exact expected values at V = 500 Mm³, so
 this is strongly testable. Froehlich labelled reference-only.
 

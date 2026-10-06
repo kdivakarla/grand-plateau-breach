@@ -538,3 +538,37 @@ largest term — contributed **zero** volume. Seed cells now take an effective
 elevation of the current lake surface, and a test asserts a masked lake still
 contributes its area times the rise.
 
+## D-016 — Empirical inflow bracket
+- Date: 2026-10-06
+- Decided by: Claude Code (implementation); **one owner decision needed**
+- All four of the spec's relations reproduce its expected values at V = 500 Mm³:
+  2,780 / 4,824 / 16,941 m³/s, and Froehlich 50,641 — the last confirming that the
+  spec's ~51,000 assumed **H_w = 100 m**, the nominal LGP–GPL head. Every curve
+  integrates to V_w to machine precision (worst error 2×10⁻¹⁶).
+
+### Result over the actual V_w bracket (78–200 Mm³, H_w = 58.6 m)
+| relation | mode | Q_p (m³/s) | duration |
+|---|---|---|---|
+| Walder & Costa, tunnel | tunnel | 815 – 1,519 | 96 – 133 h |
+| Clague & Mathews | tunnel | 1,388 – 2,611 | 57 – 77 h |
+| Walder & Costa, non-tunnel | non-tunnel | 7,475 – 11,320 | 5.8 – 9.8 h |
+| *Froehlich (reference only)* | *moraine breach* | *16,650 – 23,783* | *2.6 – 4.7 h* |
+
+**The drainage mode matters far more than V_w.** Tunnel gives 815–2,611 m³/s;
+non-tunnel gives 7,475–11,320 — a factor of **13.9**, against the ~2.6× spread
+that the entire volume uncertainty contributes. Resolving whether this is a
+tunnel or a non-tunnel failure is worth more than any improvement to the
+bathymetry. **Owner decision.**
+
+Which mode applies is physical, not statistical, so the code reports both and
+prefers neither. Froehlich is flagged `reference_only` in the data structure, and
+a test asserts the flag, so no table or plot can quietly promote a moraine-breach
+regression into the applicable set.
+
+### Plotting note
+Tunnel and non-tunnel differ by ~14× in peak and ~20× in duration. A single
+linear time axis squashes the fast case; a log axis distorts the curves into
+shapes that no longer read as hydrographs. The figure therefore uses two panels
+with a **shared y-axis** — peaks comparable, timescales honest, and equal area
+under every curve.
+
