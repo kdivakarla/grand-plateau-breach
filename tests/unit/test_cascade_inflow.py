@@ -92,13 +92,13 @@ def test_triangle_volume_is_independent_of_peak_position() -> None:
     qp = 1000.0
     vols = []
     for pf in (0.2, 0.5, 0.8):
-        t, q = hydrograph(qp, 1e8, "triangle", peak_fraction=pf)
-        vols.append(np.trapezoid(q, t))
+        tt, q = hydrograph(qp, 1e8, "triangle", peak_fraction=pf)
+        vols.append(np.trapezoid(q, tt))
     assert np.allclose(vols, 1e8, rtol=1e-9)
 
 
 def test_zero_volume_gives_no_flood() -> None:
-    t, q = hydrograph(0.0, 0.0, "triangle")
+    _, q = hydrograph(0.0, 0.0, "triangle")
     assert q.max() == 0.0
     assert RELATIONS["clague_mathews"].peak_discharge(0.0) == 0.0
 
