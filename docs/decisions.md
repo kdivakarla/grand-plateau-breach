@@ -572,3 +572,61 @@ shapes that no longer read as hydrographs. The figure therefore uses two panels
 with a **shared y-axis** — peaks comparable, timescales honest, and equal area
 under every curve.
 
+## D-017 — ICESat-2 lake-level time series
+- Date: 2026-10-07
+- Decided by: Claude Code (implementation); **two owner decisions below**
+- `gpbreach.io.nsidc` (CMR search + Earthdata download via `~/.netrc`) and
+  `gpbreach.cascade.lake_levels`. 43 melt-season ATL06 granules, 2019–2026,
+  cached in `data/raw/ICESat-2/ATL06/` (~0.7 GB, gitignored).
+
+**ATL06, not ATL13.** ATL13 is the inland-water product and the obvious choice,
+but its HydroLAKES reference mask does not contain these ice-dammed lakes, so it
+returns nothing over all three regardless of track (D-008). ATL06 covers them and
+agrees with ATL13 to 0.10–0.25 m where both exist.
+
+### Result: 33 usable of 129 lake-overpass pairs
+| lake | epochs | median | range | typical scatter |
+|---|---|---|---|---|
+| Alsek | 18 | 32.21 m | 27.88–32.93 (**5.05 m**) | 0.21 m |
+| GPL | 14 | 30.35 m | 29.77–31.00 (1.23 m) | 0.11 m |
+| LGP | **1** | 119.75 m | — | 0.07 m |
+
+All WGS84 ellipsoidal (ITRF2014); `level_egm2008_m` carries the geoid-corrected
+form. Rejected rows are retained with a `flag` saying why, so what was discarded
+is visible rather than merely absent.
+
+### 1. Alsek has a strong melt-season signal — and fills the `alsek: null` gap
+27.88 m (1 May 2019) → 32.56 m (30 Jul 2019); 29.72 m (26 May 2022) → 32.16 m
+(25 Jun 2022). It rises ~4–5 m through the season, far more than GPL's 1.2 m
+total spread. **Owner decision: what value to set for `lake_levels.alsek`** — a
+melt-season median of ~32.2 m, or a date-matched value, given the variation is
+larger than the quantity itself in some comparisons.
+
+### 2. Both lakes read ~2.5–2.75 m above the configured levels
+| lake | config | ICESat-2 median | difference |
+|---|---|---|---|
+| GPL | 27.6 m | 30.35 m | **+2.75 m** |
+| LGP | 117.3 m | 119.75 m | **+2.45 m** |
+
+Two independent lakes agreeing to within 0.3 m points at a **systematic offset**,
+not coincidence. The leading candidate is the NAD83 ↔ ITRF2014 ellipsoid
+difference already flagged under D-008, which is order a metre or two in Alaska;
+ICESat-2 is ITRF2014 and the provenance of the configured values is not recorded.
+**Owner decision: resolve before these levels feed Δ**, since lake level enters
+the margin one-for-one (D-013) and 2.6 m is ~0.3 yr of thinning.
+
+### 3. LGP is genuinely under-sampled, and buffering is not the cause
+Only **6 of 43** granules place any segment in LGP's bounding box, and just 2
+survive quality screening. At 3.414 km² it is a small target that the tracks
+mostly miss. An adaptive buffer was added — a fixed −150 m inward buffer costs
+Alsek a tenth of its area but LGP a half, which is not scale-free — and it did not
+change the count. **LGP's level cannot be monitored this way**; ATL03 photons or
+a different mission would be needed.
+
+### Bug fixed
+`atl06.granule_info` assumed beam `gt1l` exists. `ATL06_20220825050258` carries
+only the gt2 and gt3 pairs, and the assumption aborted a 43-granule run at
+granule 23. `granule_info` now searches the beams for one that has the field, the
+runner catches per-granule failures so one bad file cannot cost the other
+forty-two, and a regression test covers it.
+

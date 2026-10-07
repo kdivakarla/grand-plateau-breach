@@ -109,7 +109,17 @@ def granule_info(path: str | Path) -> ATL06Info:
     path = Path(path)
     with h5py.File(path, "r") as f:
         desc = _attr(f, "description", "")
-        geoid_desc = _attr(f[f"{BEAMS[0]}/land_ice_segments/dem/geoid_h"], "description", "")
+        # Not every granule carries every beam -- partial coverage and changes in
+        # the strong/weak pairing both leave groups absent. Assuming gt1l exists
+        # crashes on roughly one melt-season granule in twenty.
+        geoid_desc = ""
+        for beam in BEAMS:
+            key = f"{beam}/land_ice_segments/dem/geoid_h"
+            if key in f:
+                geoid_desc = _attr(f[key], "description", "")
+                break
+        else:
+            log.warning("%s has no land_ice_segments/dem/geoid_h on any beam", path.name)
         rgt = cycle = None
         if "orbit_info/rgt" in f:
             rgt = int(f["orbit_info/rgt"][0])

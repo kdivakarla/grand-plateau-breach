@@ -76,3 +76,34 @@ def test_orthometric_height_is_a_subtraction() -> None:
         pytest.skip("no screened segments anywhere in the granule")
     residual = (df.h_li - df.geoid_h) - df.h_ortho
     assert residual.abs().max() < 1e-6
+
+
+def test_granule_info_survives_a_missing_first_beam() -> None:
+    """Not every granule carries gt1l; assuming it does crashed a 43-granule run.
+
+    ATL06_20220825050258 has only the gt2 and gt3 pairs. granule_info must find
+    the geoid description on whichever beam is present.
+    """
+    import h5py
+
+    cache = repo_root() / "data" / "raw" / "ICESat-2" / "ATL06"
+    partial = (
+        [p for p in cache.glob("ATL06_*.h5") if _lacks_first_beam(p)] if cache.is_dir() else []
+    )
+    if not partial:
+        pytest.skip("no granule missing gt1l in the cache")
+    info = atl06.granule_info(partial[0])
+    assert info.product == "ATL06"
+    assert info.tide_system in ("tide-free", "UNSTATED - check")
+    with h5py.File(partial[0]) as f:
+        assert "gt1l" not in f, "fixture should lack gt1l"
+
+
+def _lacks_first_beam(path) -> bool:
+    import h5py
+
+    try:
+        with h5py.File(path, "r") as f:
+            return "gt1l" not in f
+    except OSError:
+        return False
