@@ -202,7 +202,12 @@ this is strongly testable. Froehlich labelled reference-only.
 events, the three spec tests (mass balance, zero-head, V^2/3 scaling). Provisional
 2018-geometry run overlaid on the bracket.
 
-**M7 — Hooks.** Entry points for projected surfaces by year, the photogrammetry
+**M7 — Hooks — PARTLY DONE 2026-10-08.** Component swapping (bed/surface/
+thinning/k) is live via `cascade.scenarios`; see D-018 and
+`docs/component_swapping.md`. Still to do: projected surfaces by year, the Monte
+Carlo wrapper, and GPL routing.
+
+*(original scope)* Entry points for projected surfaces by year, the photogrammetry
 DEM as a new `surfaces` entry, Monte Carlo wrapper, GPL routing/outlet stubs.
 
 ---

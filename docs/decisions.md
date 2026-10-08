@@ -630,3 +630,39 @@ granule 23. `granule_info` now searches the beams for one that has the field, th
 runner catches per-granule failures so one bad file cannot cost the other
 forty-two, and a regression test covers it.
 
+## D-018 — Component swapping framework, and the Millan/IceBoost bed disagreement
+- Date: 2026-10-08
+- Decided by: Claude Code (implementation); **bed choice is an open owner question**
+- `configs/cascade_data.yaml` now declares **named** beds, surfaces and thinning
+  rates; `cascade.scenarios` runs any combination and `run_scenarios` compares
+  them. See `docs/component_swapping.md`.
+
+Solves are cached on `(bed, surface, k, connectivity)` — deliberately excluding
+the thinning rate, which cannot move `h_pass`. A thinning sweep therefore costs
+one solve rather than one per rate.
+
+### Millan vs IceBoost on the 2018 surface
+| | h_pass | Δ | thinning needed | onset | bed sill | drawdown | V_w |
+|---|---|---|---|---|---|---|---|
+| Millan | 233.26 | +115.96 | 126.5 m | 2032.0 | 58.71 | 58.59 | 78–200 Mm³ |
+| IceBoost | 245.00 | +127.70 | 139.3 m | 2033.4 | **185.39** | **0.00** | **0** |
+
+**Timing is insensitive (+1.4 yr); flood size is not.** IceBoost's sill sits above
+LGP's own surface, which taken literally means no drainage at all. Along the 2018
+path IceBoost holds the bed above 58 m for 5.8 km against Millan's 21 m — mean
+difference +105 m, sd 62 m. This confirms the owner's observation that the sill is
+a far broader feature in IceBoost.
+
+A V_w of zero is not credible for a lake that drains, so this is a reason to
+**doubt the IceBoost ingest or its datum**, not yet a reason to prefer either bed.
+`vertical: ellipsoid_wgs84` for IceBoost is marked TO CONFIRM.
+
+### The arbiter exists but is not yet usable
+`glathida_thickness/` holds 1,947 IceBridge UAF radar soundings over both
+glaciers. GlaThiDa's `elevation` field does **not** match our ice surface (median
++111 m, IQR +95 to +236), so `bed = elevation − thickness` is not defensible as
+ground truth yet. An earlier comparison built on that assumption put both beds
+~200 m below radar; that number is **withdrawn** — it reflects the unresolved
+field definition. Settling what `elevation` means in IRUAFHF2 (Tober et al. 2025)
+is the highest-value open item here.
+

@@ -45,6 +45,11 @@ LAYERS = {
     "surf_2018": ("surf_2m.tif", False),
 }
 
+#: Extra named beds from the config, regridded onto the canonical grid. A bed may
+#: arrive in any CRS or resolution -- IceBoost is EPSG:32608 at 100 m against the
+#: project's ESRI:102247 at 5 m -- so this is the single place that is handled.
+CONFIG = repo_root() / "configs" / "cascade_data.yaml"
+
 #: Classes are rebuilt from the outlines rather than resampled -- see
 #: grid.rasterize_classes for why resampling cannot extend them.
 ICE_VECTOR = "ice_2018.gpkg"
@@ -179,6 +184,44 @@ def main(argv: list[str] | None = None) -> int:
                         "    WARNING: below 99% -- the rebuild may have changed the "
                         "classification, not just extended it. Inspect before use."
                     )
+
+    # --- named beds from the config -----------------------------------------
+    import yaml
+
+    if CONFIG.exists():
+        cfg = yaml.safe_load(CONFIG.read_text())
+        for entry in cfg.get("beds", []):
+            src = entry.get("source_path")
+            if not src:
+                continue
+            src_p = repo_root() / src
+            dest_name = Path(entry["path"]).name
+            if not src_p.exists():
+                log.warning("bed %s: %s not found", entry["id"], src_p)
+                continue
+            if (
+                (out_dir / dest_name).exists()
+                and src_p.samefile(IN_DIR / Path(src).name)
+                and dest_name == f"{Path(src).stem}.tif"
+                and entry["id"] == "millan"
+            ):
+                pass
+            log.info("regridding bed %s from %s", entry["id"], src_p.name)
+            arr = regrid(src_p, target, categorical=False)
+            write(out_dir / dest_name, arr, target)
+            n = int(np.isfinite(arr).sum())
+            manifest["layers"][f"bed_{entry['id']}"] = {
+                "status": "ok",
+                "source": str(src_p),
+                "output": str(out_dir / dest_name),
+                "resampling": "bilinear",
+                "valid_cells": n,
+                "valid_pct": round(100.0 * n / target.n_cells, 2),
+            }
+            print(
+                f"  wrote {dest_name:22s} {n:>12,} valid cells "
+                f"({100.0 * n / target.n_cells:5.1f}% of grid)  [bed: {entry['id']}]"
+            )
 
     if classes is not None:
         lakes = IN_DIR / "lakes_2018.gpkg"

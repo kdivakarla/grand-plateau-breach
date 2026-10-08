@@ -7,6 +7,7 @@ grid:
   standard_dir: data/standard
   manifest: data/standard/grid_manifest.json
 
+# Named surfaces, same idea. Add the photogrammetry DEM here when it lands.
 surfaces:
   - id: arcticdem_20180903
     path: data/standard/surf_2018.tif
@@ -14,10 +15,21 @@ surfaces:
     vertical: ellipsoid_wgs84
     source: ArcticDEM WV02 + WV03 strips, lakes masked, clipped to ice
 
-bed:
-  path: data/standard/bed_ellip.tif
-  vertical: ellipsoid_wgs84
-  source: IfSAR minus Millan thickness; NAVD88 -> ellipsoid via GEOID12B + stable-ground offset
+# Named beds. Any entry here can be selected by id; build_grid puts every one of
+# them on the canonical grid, whatever CRS or resolution it arrives in.
+beds:
+  - id: millan
+    path: data/standard/bed_ellip.tif
+    source_path: data/processed/bed_ellip.tif
+    vertical: ellipsoid_wgs84
+    source: IfSAR minus Millan thickness; NAVD88 -> ellipsoid via GEOID12B + stable-ground offset
+  - id: iceboost
+    path: data/standard/bed_iceboost.tif
+    source_path: data/processed/bed_iceboost_gp.tif
+    vertical: ellipsoid_wgs84          # TO CONFIRM
+    source: IceBoost ML thickness inversion, trained on IceBridge radar; EPSG:32608 at 100 m
+
+default_bed: millan
 
 classes: data/standard/classes.tif
 # 0 land, 1 ice, 2 LGP, 3 GPL, 4 Alsek
@@ -31,5 +43,15 @@ lake_levels:              # metres, WGS84 ellipsoidal
   lgp: 117.3              # owner 2026-10-05
   gpl: 27.6               # owner 2026-10-05
   alsek: null             # TO SUPPLY -- blocks competing_outlets
+
+# Named thinning scenarios. These only move the time axis -- see scenarios.py --
+# so adding one is free: no saddle re-solve.
+thinning:
+  - id: baseline_9.05
+    dhdt_m_per_yr: -9.05
+    source: OIB/DEM transects, D-004
+  - id: round_9
+    dhdt_m_per_yr: -9.0
+    source: the owner's rounded figure
 
 output_dir: data/derived
