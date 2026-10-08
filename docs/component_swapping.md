@@ -78,22 +78,26 @@ millan     58.71     58.71     58.59    78–200      815–1519
 iceboost  185.39    185.39      0.00       0–0           0–0
 ```
 
-**Timing barely cares: +1.4 yr. Flood size changes completely.**
+**Timing barely cares: +1.4 yr. Flood size depends on which sill you mean.**
 
-IceBoost puts the bed sill at 185.4 m, which is **above LGP's surface (117.3 m)**.
-Taken literally that says LGP cannot drain along this route at all — V_w = 0, no
-flood. The two models disagree about the drainage corridor far more than they
-disagree about the dam.
+Those `V_w` figures use the **along-path** sill. Under the **bed-only** sill —
+the lowest bed ridge on any route, which is what you see reading the raster in
+QGIS — Millan gives 119–306 Mm³ and IceBoost 111–285 Mm³, and neither blocks
+drainage. `run_scenarios` prints both; see D-019.
+
+IceBoost puts the *along-path* sill at 185.4 m, above LGP's surface, which taken
+literally says no drainage on that route. Its *bed-only* sill is 33.85 m, which
+permits an 83 m drawdown. The two models disagree about the drainage corridor far
+more than they disagree about the dam — but so do the two definitions of the sill,
+and that gap is the larger one.
 
 The owner's observation is confirmed and then some: along the 2018 path, IceBoost
 holds the bed above 58 m for **5.8 km**, where Millan does so for **21 m**. Mean
 difference +105 m, sd 62 m.
 
-**This is not yet a reason to prefer either bed.** A V_w of zero is physically
-implausible for a lake that exists and drains, so the likeliest readings are that
-IceBoost is poor in this corridor, or that its vertical reference is not what the
-config assumes (`vertical: ellipsoid_wgs84` is marked TO CONFIRM). Before using
-IceBoost for anything, settle its datum and validate it against radar.
+**This is not yet a reason to prefer either bed.** IceBoost's vertical reference
+is still marked TO CONFIRM, and the +105 m mean offset from Millan along the path
+is large enough to want independent checking before either is trusted.
 
 ## The validation that is still open
 

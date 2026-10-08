@@ -25,10 +25,13 @@ it. The catch is that QGIS ships its own Python, which does **not** have the
 
 ```python
 import subprocess
+
 PY = "/opt/miniconda3/envs/gpbreach/bin/python"
-subprocess.run([PY, "-m", "gpbreach.cascade.run_scenarios",
-                "--beds", "millan", "iceboost"],
-               cwd="/path/to/grand-plateau-breach", check=True)
+subprocess.run(
+    [PY, "-m", "gpbreach.cascade.run_scenarios", "--beds", "millan", "iceboost"],
+    cwd="/path/to/grand-plateau-breach",
+    check=True,
+)
 ```
 
 Then reload the layers with the script above.

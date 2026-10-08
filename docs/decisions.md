@@ -418,7 +418,7 @@ the D-008 table (−0.83 yr) does not apply. The remaining D-008 item is the bed
 | flotation-zone length | 2.848 km |
 | N at pass / mean over seal / min | +115.96 / +89.07 / −96.44 m |
 
-**The bed sill controls the drawdown, not GPL's level.** LGP drains from 117.3 m
+**[SUPERSEDED by D-019 — this holds only under the along-path reading of the\nsill; under the bed-only reading GPL controls.]** LGP drains from 117.3 m
 to 58.71 m, not to 27.6 m — about 58.6 m of drawdown rather than 89.7 m. That
 feeds M4 directly and makes `V_w` materially smaller than a GPL-controlled
 estimate would suggest.
@@ -484,7 +484,7 @@ V_w is therefore reported as a **bracket**, not a number:
 A real basin lies between them. Drawdown is 117.3 → 58.71 m = 58.59 m, the bed
 sill controlling (D-014).
 
-**The spec's ~0.5 km³ expectation is superseded — RESOLVED 2026-10-06.** The
+**[D-019 adds a second V_w answer: under the bed-only sill it is 119–306 Mm³.]**\n\n**The spec's ~0.5 km³ expectation is superseded — RESOLVED 2026-10-06.** The
 figure is reproducible, and the decomposition shows exactly what it assumed. Two
 LGP outlines exist in the repo for the same lake (centroids 913 m apart; 98.8 % of
 the 2018 outline lies inside the other):
@@ -666,3 +666,60 @@ ground truth yet. An earlier comparison built on that assumption put both beds
 field definition. Settling what `elevation` means in IRUAFHF2 (Tober et al. 2025)
 is the highest-value open item here.
 
+## D-019 — Two sills, and a correction to D-014, D-015 and D-018
+- Date: 2026-10-08
+- Decided by: owner spotted the discrepancy; **which sill governs is still an
+  owner decision**
+
+The owner read the IceBoost bed in QGIS, saw a pass near 20 m, and asked why the
+analysis reported 185 m. The analysis was wrong — or rather, it was answering a
+different question than the one it appeared to answer.
+
+### The two quantities
+| | millan | iceboost |
+|---|---|---|
+| **along-path**: highest bed on the flotation route | 58.71 m | 185.39 m |
+| **bed-only**: lowest bed ridge on *any* route | **11.08 m** | **33.85 m** |
+
+The flotation route is chosen to minimise hydraulic potential, not bed elevation,
+so it will climb over a high bed ridge wherever the ice is thick. Reporting its
+maximum bed as "the sill" implied it was the lowest bed route. It is not, and the
+two differ by 48 m on Millan and 152 m on IceBoost.
+
+### What that corrects
+- **D-018's "IceBoost gives V_w = 0, no flood" is withdrawn.** Under the bed-only
+  reading IceBoost's sill is 33.85 m, an 83.45 m drawdown and V_w of 111–285 Mm³.
+  The suspicion recorded there that V_w = 0 was implausible was right; the cause
+  was this definition, not the data or its datum.
+- **D-015's V_w of 78–200 Mm³ is one of two answers, not the answer.** Millan's
+  bed-only pass of 11.08 m lies *below* GPL at 27.6 m, so the receiving lake would
+  control rather than any sill: drawdown 89.7 m and V_w 119–306 Mm³.
+- **D-014's "the bed sill controls the drawdown, not GPL" holds only under the
+  along-path reading.** Under the bed-only reading it is false for Millan.
+
+### Both are now reported
+`scenarios.bed_pass` computes the bed-only minimax region-to-region, and
+`run_scenarios` prints both readings with V_w and Q_p under each:
+
+```
+bed        sill def      sill  h_final  drawdn        controls    V_w Mm3   Qp tunnel
+millan     along-path   58.71    58.71   58.59        bed_sill     78-200    815-1519
+millan     bed-only     11.08    27.60   89.70  receiving_lake    119-306   1079-2012
+iceboost   along-path  185.39   185.39    0.00        bed_sill      0-0         0-0
+iceboost   bed-only     33.85    33.85   83.45        bed_sill    111-285   1029-1918
+```
+
+### The physics question, unresolved
+*Along-path* assumes the flood drains through the conduit that opened and that the
+route cannot migrate — conservative, smaller flood. *Bed-only* assumes water finds
+the lowest available route once drainage is under way — larger flood. The spec
+specifies the first. The truth is likely between, and the gap is large enough
+(Millan 78–200 against 119–306 Mm³) that it should be chosen deliberately rather
+than inherited from a definition.
+
+### Also fixed
+The scenario cache key now carries a schema version. Without it a cache written
+before `bed_pass_m` existed would still have been served, answering the new
+question with the field missing. A test asserts the versioned key differs from the
+unversioned one.
+\n

@@ -31,8 +31,27 @@ Two branches run from the same swap, and a bed change moves **both**::
                                  ->  thinning needed = Delta / kappa
                      ->  (with dh/dt)  ->  years to breach  ->  onset year
 
-    bed              ->  bed sill  ->  h_final = max(h_GPL, sill)
+    bed              ->  sill      ->  h_final = max(h_GPL, sill)
                                    ->  drawdown  ->  V_w  ->  Q_p
+
+Two sills, and they are not interchangeable
+-------------------------------------------
+"The sill" is ambiguous, and the two readings differ by 48 m on the Millan bed and
+152 m on IceBoost:
+
+``bed_sill_m`` -- the highest bed along the **flotation path**. That route is
+chosen to minimise hydraulic potential, not bed elevation, so it will climb over a
+bed ridge where the ice is thick. This is the spec's definition and it is the
+conservative one: it assumes the flood drains through the conduit that opened and
+that the route cannot migrate.
+
+``bed_pass_m`` -- the lowest bed ridge on **any** route between the lakes,
+regardless of where the seal opens. This is what you see reading the bed raster in
+QGIS. It assumes that once drainage is under way water finds the lowest route.
+
+The truth is somewhere between, so both are reported and ``V_w`` is computed under
+each. Which to believe is a physics decision for the owner, not something to bury
+in a definition.
 
 A surface or thinning change moves only the timing. A bed change moves the timing
 *and* the flood size, which is why bed is the swap to be most careful about.
@@ -78,9 +97,15 @@ class Scenario:
 
     @property
     def geometry_key(self) -> str:
-        """Identity of the expensive part: everything except the thinning rate."""
+        """Identity of the expensive part: everything except the thinning rate.
+
+        The ``v2`` prefix is a schema version, not decoration: v2 added
+        ``bed_pass_m`` to the cached payload, and without the bump a v1 cache
+        would still be served and silently answer with that field missing.
+        Bump it whenever the cached dict gains or changes a field.
+        """
         raw = (
-            f"{self.bed_id}|{self.surface_id}|{self.k:.10g}|"
+            f"v2|{self.bed_id}|{self.surface_id}|{self.k:.10g}|"
             f"{self.connectivity}|{self.smoothing_m:g}"
         )
         return hashlib.sha256(raw.encode()).hexdigest()[:16]
@@ -96,6 +121,7 @@ class ScenarioResult:
     thinning_needed_m: float
     pass_cell: tuple[int, int] | None
     bed_sill_m: float
+    bed_pass_m: float
     l_pass_m: float
     l_total_m: float
     n_at_pass_m: float
@@ -107,6 +133,12 @@ class ScenarioResult:
     dhdt_m_per_yr: float
     years_to_breach: float
     onset_year: float
+    # The bed-only reading of the sill, carried alongside the along-path one.
+    h_final_bedpass_m: float = float("nan")
+    drawdown_bedpass_m: float = float("nan")
+    controlled_by_bedpass: str = ""
+    vw_lo_bedpass_mm3: float = float("nan")
+    vw_hi_bedpass_mm3: float = float("nan")
     qp_tunnel_lo: float = float("nan")
     qp_tunnel_hi: float = float("nan")
     qp_nontunnel_lo: float = float("nan")
@@ -153,9 +185,11 @@ def solve_geometry(
     surf = zs
     if scenario.smoothing_m:
         surf = masked_smooth(zs, classes == codes["ice"], scenario.smoothing_m, abs(transform.a))
+    # Bed-only pass: independent of the head, so it is computed once alongside it.
+    bp = bed_pass(zb, classes, codes, scenario.connectivity)
     head, info = head_surface(zb, surf, classes, lake_levels, k=scenario.k)
     res = pass_search(head, classes, codes["gpl"], codes["lgp"], scenario.connectivity)
-    out: dict = {"reached": bool(res.reached_target), "head_info": info}
+    out: dict = {"reached": bool(res.reached_target), "head_info": info, "bed_pass_m": bp}
     if not res.reached_target:
         out.update({"h_pass_m": None, "bed_sill_m": None})
     else:
@@ -180,6 +214,20 @@ def solve_geometry(
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache.write_text(json.dumps(out, indent=2, default=str))
     return out
+
+
+def bed_pass(bed: np.ndarray, classes: np.ndarray, codes: dict, connectivity: int = 8) -> float:
+    """Lowest bed ridge on any route between the two lakes (m).
+
+    Both lake footprints are set to ``-inf`` -- water is already there, so they are
+    not barriers -- and the minimax then runs over the intervening bed. Seeding is
+    region-to-region via ``pass_search``, not cell-to-cell, so the answer is the
+    true lowest ridge rather than the ridge between two arbitrary points.
+    """
+    field = np.where(np.isfinite(bed), bed, np.inf)
+    field = np.where((classes == codes["lgp"]) | (classes == codes["gpl"]), -np.inf, field)
+    res = pass_search(field, classes, codes["gpl"], codes["lgp"], connectivity)
+    return float(res.h_pass) if res.reached_target else float("inf")
 
 
 def volume_bracket(
@@ -261,8 +309,26 @@ def run_scenario(
     vol = volume_bracket(
         grids["classes"], codes, grids["cell_area_m2"], h_lgp, h_gpl, geom["bed_sill_m"]
     )
+    # The same volume calculation under the bed-only reading of the sill.
+    bp = geom.get("bed_pass_m", float("nan"))
+    if np.isfinite(bp):
+        vol_bp = volume_bracket(grids["classes"], codes, grids["cell_area_m2"], h_lgp, h_gpl, bp)
+    else:
+        vol_bp = {
+            "lo": float("nan"),
+            "hi": float("nan"),
+            "h_final": float("nan"),
+            "drawdown": float("nan"),
+            "controlled_by": "no bed route",
+        }
+
     if vol["drawdown"] <= 0:
-        notes.append("bed sill at or above the lake surface: no drainage, V_w = 0")
+        notes.append("along-path sill at or above the lake surface: no drainage on that route")
+    if np.isfinite(bp) and vol_bp["drawdown"] > vol["drawdown"] + 1.0:
+        notes.append(
+            f"a lower bed route exists at {bp:.1f} m; drawdown would be "
+            f"{vol_bp['drawdown']:.1f} m instead of {vol['drawdown']:.1f} m"
+        )
 
     qp = {}
     for key in ("walder_costa_tunnel", "walder_costa_nontunnel"):
@@ -284,6 +350,12 @@ def run_scenario(
         controlled_by=vol["controlled_by"],
         vw_lo_mm3=vol["lo"],
         vw_hi_mm3=vol["hi"],
+        bed_pass_m=bp,
+        h_final_bedpass_m=vol_bp["h_final"],
+        drawdown_bedpass_m=vol_bp["drawdown"],
+        controlled_by_bedpass=vol_bp["controlled_by"],
+        vw_lo_bedpass_mm3=vol_bp["lo"],
+        vw_hi_bedpass_mm3=vol_bp["hi"],
         dhdt_m_per_yr=dhdt,
         years_to_breach=years,
         onset_year=base_year + years,

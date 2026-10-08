@@ -26,6 +26,7 @@ import rasterio
 import yaml
 
 from ..config import repo_root
+from .inflow_empirical import RELATIONS
 from .scenarios import expand, run_scenario
 
 log = logging.getLogger(__name__)
@@ -171,25 +172,52 @@ def main(argv: list[str] | None = None) -> int:
         )
 
     print("\n" + "=" * 100)
-    print("FLOOD SIZE — set by the bed alone, through the sill")
+    print("FLOOD SIZE — the two readings of 'the sill' are not interchangeable")
     print(
-        f"{'bed':10s} {'sill':>9s} {'h_final':>9s} {'drawdown':>9s} {'control':>16s} "
-        f"{'V_w Mm3':>16s} {'Qp tunnel':>14s}"
+        "  along-path : highest bed on the flotation route (conservative; assumes a fixed conduit)"
+    )
+    print("  bed-only   : lowest bed ridge on ANY route (what the bed raster shows)")
+    print()
+    print(
+        f"{'bed':10s} {'sill def':11s} {'sill':>9s} {'h_final':>9s} {'drawdn':>8s} "
+        f"{'controls':>16s} {'V_w Mm3':>15s} {'Qp tunnel m3/s':>17s}"
     )
     seen = set()
     for r in results:
         if r.scenario.bed_id in seen:
             continue
         seen.add(r.scenario.bed_id)
-        print(
-            f"{r.scenario.bed_id:10s} {r.bed_sill_m:9.2f} {r.h_final_m:9.2f} "
-            f"{r.drawdown_m:9.2f} {r.controlled_by:>16s} "
-            f"{r.vw_lo_mm3:7.0f}-{r.vw_hi_mm3:<8.0f} "
-            f"{r.qp_tunnel_lo:6.0f}-{r.qp_tunnel_hi:<7.0f}"
-        )
+        rows = [
+            (
+                "along-path",
+                r.bed_sill_m,
+                r.h_final_m,
+                r.drawdown_m,
+                r.controlled_by,
+                r.vw_lo_mm3,
+                r.vw_hi_mm3,
+            ),
+            (
+                "bed-only",
+                r.bed_pass_m,
+                r.h_final_bedpass_m,
+                r.drawdown_bedpass_m,
+                r.controlled_by_bedpass,
+                r.vw_lo_bedpass_mm3,
+                r.vw_hi_bedpass_mm3,
+            ),
+        ]
+        for lbl, sill, hf, dd, ctrl, lo, hi in rows:
+            tun = RELATIONS["walder_costa_tunnel"]
+            qlo = tun.peak_discharge(max(lo, 0.0)) if np.isfinite(lo) else float("nan")
+            qhi = tun.peak_discharge(max(hi, 0.0)) if np.isfinite(hi) else float("nan")
+            print(
+                f"{r.scenario.bed_id:10s} {lbl:11s} {sill:9.2f} {hf:9.2f} {dd:8.2f} "
+                f"{ctrl:>16s} {lo:6.0f}-{hi:<8.0f} {qlo:7.0f}-{qhi:<9.0f}"
+            )
         for n in r.notes:
             print(f"{'':10s}   note: {n}")
-
+        print()
     if len(set(df.bed)) > 1:
         print("\n" + "=" * 100)
         print("WHAT THE BED SWAP MOVED")

@@ -21,8 +21,9 @@ from qgis.core import (
 from qgis.PyQt.QtGui import QColor
 
 # --- EDIT THIS to your checkout -------------------------------------------
-REPO = Path("/Users/krishnadivakarla/work/Research/Glaciers/Grand_Plateau_Master"
-            "/grand-plateau-breach")
+REPO = Path(
+    "/Users/krishnadivakarla/work/Research/Glaciers/Grand_Plateau_Master/grand-plateau-breach"
+)
 # ---------------------------------------------------------------------------
 
 STANDARD = REPO / "data" / "standard"
@@ -35,11 +36,13 @@ def _diverging(layer, low, mid, high, colors=("#ca0020", "#f7f7f7", "#2a78d6")):
     shader = QgsRasterShader()
     ramp = QgsColorRampShader()
     ramp.setColorRampType(QgsColorRampShader.Interpolated)
-    ramp.setColorRampItemList([
-        QgsColorRampShader.ColorRampItem(low, QColor(colors[0]), f"{low:.0f}"),
-        QgsColorRampShader.ColorRampItem(mid, QColor(colors[1]), f"{mid:.0f}"),
-        QgsColorRampShader.ColorRampItem(high, QColor(colors[2]), f"{high:.0f}"),
-    ])
+    ramp.setColorRampItemList(
+        [
+            QgsColorRampShader.ColorRampItem(low, QColor(colors[0]), f"{low:.0f}"),
+            QgsColorRampShader.ColorRampItem(mid, QColor(colors[1]), f"{mid:.0f}"),
+            QgsColorRampShader.ColorRampItem(high, QColor(colors[2]), f"{high:.0f}"),
+        ]
+    )
     shader.setRasterShaderFunction(ramp)
     layer.setRenderer(QgsSingleBandPseudoColorRenderer(layer.dataProvider(), 1, shader))
     layer.triggerRepaint()

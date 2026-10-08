@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from affine import Affine
 
-from gpbreach.cascade.scenarios import Scenario, expand, volume_bracket
+from gpbreach.cascade.scenarios import Scenario, bed_pass, expand, volume_bracket
 
 CODES = {"land": 0, "ice": 1, "lgp": 2, "gpl": 3, "alsek": 4}
 T = Affine(5.0, 0.0, 0.0, 0.0, -5.0, 0.0)
@@ -74,3 +74,57 @@ def test_receiving_lake_controls_when_the_sill_is_low() -> None:
     out = volume_bracket(_classes(), CODES, 25.0, 117.3, 27.6, bed_sill=10.0)
     assert out["controlled_by"] == "receiving_lake"
     assert out["h_final"] == pytest.approx(27.6)
+
+
+def test_bed_pass_finds_the_low_route_not_the_high_one() -> None:
+    """The bed-only pass must ignore where the flotation route happens to go.
+
+    Two corridors join the lakes: one over a 180 m ridge, one over a 20 m ridge.
+    The bed-only minimax must return 20 whichever the head would pick.
+    """
+    n = 20
+    cl = np.full((n, n), CODES["land"], dtype=np.uint8)
+    cl[0:3, 0:3] = CODES["gpl"]
+    cl[17:20, 17:20] = CODES["lgp"]
+    bed = np.full((n, n), np.nan)
+    bed[0:3, 0:3] = -50.0
+    bed[17:20, 17:20] = -50.0
+    bed[1, 3:18] = 180.0  # high corridor, across then down
+    bed[1:18, 17] = 180.0
+    bed[3:18, 1] = 20.0  # low corridor, down then across
+    bed[17, 1:18] = 20.0
+    assert bed_pass(bed, cl, CODES, connectivity=8) == pytest.approx(20.0)
+
+
+def test_bed_pass_is_inf_when_no_route_exists() -> None:
+    n = 20
+    cl = np.full((n, n), CODES["land"], dtype=np.uint8)
+    cl[1:4, 1:4] = CODES["gpl"]
+    cl[16:19, 16:19] = CODES["lgp"]
+    bed = np.full((n, n), np.nan)
+    bed[1:4, 1:4] = -10.0
+    bed[16:19, 16:19] = -10.0  # no bed anywhere between them
+    assert np.isinf(bed_pass(bed, cl, CODES))
+
+
+def test_the_two_sills_give_different_volumes() -> None:
+    """The point of reporting both: they are not interchangeable."""
+    cls = _classes()
+    along = volume_bracket(cls, CODES, 25.0, 117.3, 27.6, bed_sill=58.71)
+    bedonly = volume_bracket(cls, CODES, 25.0, 117.3, 27.6, bed_sill=11.08)
+    assert bedonly["drawdown"] > along["drawdown"]
+    assert bedonly["hi"] > along["hi"]
+    assert along["controlled_by"] == "bed_sill"
+    assert bedonly["controlled_by"] == "receiving_lake"
+
+
+def test_cache_key_is_versioned() -> None:
+    """A cached payload that predates bed_pass_m must not be served.
+
+    The key carries a schema version; without it an old cache answers a new
+    question with a field missing.
+    """
+    import hashlib
+
+    unversioned = hashlib.sha256(b"millan|s|1|8|0").hexdigest()[:16]
+    assert Scenario("millan", "s", "t").geometry_key != unversioned
