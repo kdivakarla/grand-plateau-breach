@@ -26,7 +26,7 @@ beds:
   - id: iceboost
     path: data/standard/bed_iceboost.tif
     source_path: data/processed/bed_iceboost_gp.tif
-    vertical: ellipsoid_wgs84          # TO CONFIRM
+    vertical: ellipsoid_wgs84          # CONFIRMED by owner 2026-10-09
     source: IceBoost ML thickness inversion, trained on IceBridge radar; EPSG:32608 at 100 m
 
 default_bed: millan

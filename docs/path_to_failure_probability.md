@@ -48,8 +48,8 @@ distribution around the wrong branch.
 |---|---|---|---|
 | A1 | **tunnel or non-tunnel drainage?** | a binary physical mechanism, 17× → 1.8× | **conduit model (M6)**, and the hindcasts |
 | A2 | **which sill governs?** | a modelling definition (D-019) | owner decision; or make the conduit model route the flood and find out |
-| A3 | **does the spill basin pond or drain?** | determines whether the outlet ever sees the flood | one QGIS session with the DEM and imagery |
-| A4 | **which bed?** | IceBoost's datum is unconfirmed | validate against radar; confirm the vertical reference |
+| A3 | ~~does the spill basin pond or drain?~~ | **RESOLVED D-020: it drains.** New question: does the flood *bypass* the outlet? | — |
+| A4 | **which bed?** | IceBoost datum **confirmed ellipsoidal** (D-020), so the +105 m offset is real | validate against radar |
 
 A1 is the one to do first, and it is already specified: **`conduit.py` (M6)** solves
 melt-opening against creep-closure and *predicts* whether a tunnel can enlarge fast
@@ -66,8 +66,8 @@ has.
 | # | needed | for | status |
 |---|---|---|---|
 | B1 | outlet **crest elevation** and **width** | the rating curve `Q = C·L·H^1.5` | extractable — `outletOutline.gpkg` touches GPL and is inside the extended grid |
-| B2 | boulder **size distribution** (D50, D84) | the critical-shear threshold | not in the repo; `Imagery/Field photos/` may serve if anything gives scale |
-| B3 | outlet **slope** and cross-section | applied shear | extractable from the DEM |
+| B2 | ~~boulder size~~ **D50 = 0.961 m** supplied 2026-10-09 | critical shear — thresholds now computed, D-020 | **done**; D84 would still help |
+| B3 | outlet **slope** and cross-section | applied shear — **now the dominant unknown**, swings required depth 20× | extractable from the IFSAR DSM |
 | B4 | LGP **bathymetry** | tightens V_w | missing; worth only 1.9× — **do this last** |
 
 B2 is the hard blocker. Without a grain size there is no threshold to compare

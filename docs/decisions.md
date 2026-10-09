@@ -723,3 +723,68 @@ before `bed_pass_m` existed would still have been served, answering the new
 question with the field missing. A test asserts the versioned key differs from the
 unversioned one.
 \n
+
+## D-020 — IceBoost datum, the spill basin, and the armor threshold
+- Date: 2026-10-09
+
+### IceBoost is ellipsoidal — CONFIRMED by owner
+`configs/cascade_data.yaml` updated from TO CONFIRM. This closes gap A4 in
+`docs/path_to_failure_probability.md`: the +105 m mean offset from Millan along
+the path is a genuine model disagreement, not a datum artifact.
+
+### The spill basin drains — it does not pond
+The D-015 "adjoining basin that absorbs 309 Mm³" was an **artifact of the DEM**.
+
+`surf_2m` is clipped to ice with lakes masked, so the coastal lowland around GPL
+is full of holes. A flood fill on it finds an apparently enclosed depression
+reaching −46 m that never spills, even at a 60 m stage over a 30 × 28 km window.
+A closed depression 53 m below sea level beside the ocean is not credible.
+
+Repeating the test on the **IFSAR DSM**, which is not ice-clipped, reverses it:
+at GPL's *current* level (27.6 m ellipsoidal = 20.8 m NAVD88) the lake is already
+connected to a 281 km² region that reaches sea level and every tile edge. That is
+simply GPL's existing drainage to the Alsek River and Dry Bay.
+
+**Method, for repeating this anywhere:**
+1. Use a DEM that is **not** clipped to ice. Ice-clipped products cannot answer
+   drainage questions off the glacier.
+2. **Mask the void sentinel.** The IFSAR DSM carries −10000 with no nodata flag
+   set. Read naively it is "valid 100%", and those voids connect everything —
+   the first run reported 555 km² draining to the sea for the wrong reason.
+3. Coarsen by **block minimum**, not averaging. Averaging closes the narrow
+   channels that decide connectivity.
+4. Flood fill from the lake and ask whether the region reaches a known outlet or
+   the sea.
+
+**Consequence.** GPL is not a two-reservoir system with a large hidden store. The
+"spill" at ~29.6 m is GPL overtopping onto the coastal plain — and the outlet
+polygon lies **inside** that footprint, so the lateral spill is plausibly the
+outflow route itself rather than a separate sink. Routing should treat it as
+conveyance, not storage. Whether the flood then **bypasses** the boulder outlet,
+which would leave the armor unloaded, is now the open question.
+
+### Armor threshold from D50 = 0.961 m (owner, 2026-10-09)
+`tau_c = theta_c (rho_s − rho_w) g D50`, with rho_s = 2650 kg m⁻³:
+
+| theta_c | tau_c | depth-slope product needed |
+|---|---|---|
+| 0.030 | 467 Pa | 0.0476 m |
+| 0.045 | 700 Pa | 0.0714 m |
+| 0.060 | 933 Pa | 0.0951 m |
+
+Flow depth required to mobilise, by slope:
+
+| slope | theta_c 0.03 | 0.045 | 0.06 | Lamb et al. (2008) |
+|---|---|---|---|---|
+| 0.005 | 9.51 m | 14.27 m | 19.03 m | — |
+| 0.010 | 4.76 m | 7.14 m | 9.51 m | — |
+| 0.020 | 2.38 m | 3.57 m | 4.76 m | 4.47 m |
+| 0.050 | 0.95 m | 1.43 m | 1.90 m | 2.25 m |
+| 0.100 | 0.48 m | 0.71 m | 0.95 m | 1.34 m |
+
+**The outlet slope now matters more than anything else in this calculation** — it
+swings the required depth by a factor of 20 across the plausible range, far more
+than the choice of `theta_c`. Measuring it is cheap and is the next thing to do.
+Lamb et al.'s slope-dependent `theta_c ~ 0.15 S^0.25` is also tabulated, because
+constant-Shields is optimistic on steep boulder beds; both should be reported.
+
