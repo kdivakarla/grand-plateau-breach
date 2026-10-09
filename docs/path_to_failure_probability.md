@@ -67,7 +67,7 @@ has.
 |---|---|---|---|
 | B1 | outlet **crest elevation** and **width** | the rating curve `Q = C·L·H^1.5` | extractable — `outletOutline.gpkg` touches GPL and is inside the extended grid |
 | B2 | ~~boulder size~~ **D50 = 0.961 m** supplied 2026-10-09 | critical shear — thresholds now computed, D-020 | **done**; D84 would still help |
-| B3 | outlet **slope** and cross-section | applied shear — **now the dominant unknown**, swings required depth 20× | extractable from the IFSAR DSM |
+| B3 | ~~outlet slope~~ **S = 0.16** supplied 2026-10-09 (D-021) | applied shear | **done**; cross-section/width still needed |
 | B4 | LGP **bathymetry** | tightens V_w | missing; worth only 1.9× — **do this last** |
 
 B2 is the hard blocker. Without a grain size there is no threshold to compare
@@ -105,8 +105,11 @@ Once the branches are closed and the modules exist:
 
 ## 3. What can honestly be said, and when
 
-**Now:** peak inflow to GPL is known to within a factor of ~17. Nothing can be
-said about the outlet.
+**Now (updated 2026-10-09):** with D50 and slope in hand, a first branch-wise
+verdict exists — under non-tunnel drainage the armor mobilises with a large
+margin; under tunnel drainage it sits near threshold (D-021). Peak inflow is
+still known only to a factor of ~17, and that same unresolved branch is what
+separates the two verdicts.
 
 **After A1 + A3 and modules C1–C2:** a conditional statement — *"given tunnel
 drainage, GPL's stage reaches X and the outlet sees Q_out of Y"*. Useful, and

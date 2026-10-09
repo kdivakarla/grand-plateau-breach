@@ -788,3 +788,53 @@ than the choice of `theta_c`. Measuring it is cheap and is the next thing to do.
 Lamb et al.'s slope-dependent `theta_c ~ 0.15 S^0.25` is also tabulated, because
 constant-Shields is optimistic on steep boulder beds; both should be reported.
 
+## D-021 — Outlet slope 0.16, and a first verdict on armor mobilisation
+- Date: 2026-10-09
+- Owner supplied **S = 0.16** from IFSAR + USGS lidar. That is far steeper than
+  the 0.005–0.10 range tabulated in D-020 and it changes the conclusion.
+
+At S = 0.16 the slope-corrected threshold (Lamb et al. 2008,
+`theta_c ~ 0.15 S^0.25` = 0.095) gives `tau_c = 1476 Pa`, needing **0.94 m** of
+flow depth. Constant Shields at 0.045 would give 0.45 m, but constant Shields is
+not appropriate at this slope and is reported only for contrast.
+
+### tau / tau_c across crest width and roughness
+
+| branch | Q (m³/s) | range of tau/tau_c | verdict |
+|---|---|---|---|
+| tunnel, lower | 816 | **0.5 – 3.2** | **marginal** |
+| tunnel, upper | 2,011 | 0.8 – 5.4 | marginal to mobilising |
+| non-tunnel, lower | 7,480 | 1.8 – 11.9 | **mobilises** |
+| non-tunnel, upper | 13,649 | 2.5 – 17.1 | **mobilises** |
+
+(ranges span crest width 50–400 m and Manning n 0.05–0.15)
+
+**The drainage-mode question maps directly onto the failure question.** The same
+decision that collapses peak discharge from 17× to 1.8× (D-020,
+`path_to_failure_probability.md`) also separates "armor almost certainly
+mobilises" from "marginal, could go either way". Resolving tunnel versus
+non-tunnel — i.e. building `conduit.py` — is now doubly the priority.
+
+### Caveats, and they are substantial
+1. **Mobilisation is not failure.** Incipient motion of D50 is the start of a
+   progressive sequence — winnowing, then armor break-up, then incision. A
+   `tau/tau_c` slightly above 1 does not mean the outlet breaches.
+2. **`tau = rho g h S` assumes steady uniform flow.** At S = 0.16 the flow is
+   supercritical and strongly non-uniform; the depth-slope product is a crude
+   stand-in.
+3. **Form drag is not separated.** At this slope much of the total stress is
+   carried by drag on the boulders themselves rather than transmitted to
+   individual grains, so the effective grain stress is lower than `tau`. Lamb's
+   correction captures part of this, not all of it. These ratios are therefore
+   **upper bounds**.
+4. **D50 alone does not describe an armor layer.** D84, the armor ratio and
+   imbrication all matter and none is known.
+5. **Crest width is unmeasured** and spans a factor of 8 in the table.
+6. **The bypass question is open** (D-020): if the flood spills onto the coastal
+   plain around the outlet, none of this stress is applied to the armor at all.
+
+So the defensible statement today is: *under non-tunnel drainage the armor is
+mobilised with a large margin; under tunnel drainage it sits near threshold.*
+Anything stronger needs the conduit model, a crest width, and a treatment of
+form drag.
+
