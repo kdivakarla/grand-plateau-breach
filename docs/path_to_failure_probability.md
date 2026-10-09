@@ -48,7 +48,7 @@ distribution around the wrong branch.
 |---|---|---|---|
 | A1 | **tunnel or non-tunnel drainage?** | a binary physical mechanism, 17× → 1.8× | **conduit model (M6)**, and the hindcasts |
 | A2 | **which sill governs?** | a modelling definition (D-019) | owner decision; or make the conduit model route the flood and find out |
-| A3 | ~~does the spill basin pond or drain?~~ | **RESOLVED D-020: it drains.** New question: does the flood *bypass* the outlet? | — |
+| A3 | **does the flood bypass the outlet?** | **NOW DECISIVE (D-022).** The 30 m throat is undersized 6-90x, so most of the flood cannot pass through it | 2-D hydraulics over the outlet reach |
 | A4 | **which bed?** | IceBoost datum **confirmed ellipsoidal** (D-020), so the +105 m offset is real | validate against radar |
 
 A1 is the one to do first, and it is already specified: **`conduit.py` (M6)** solves

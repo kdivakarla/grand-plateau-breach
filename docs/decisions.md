@@ -838,3 +838,83 @@ mobilised with a large margin; under tunnel drainage it sits near threshold.*
 Anything stronger needs the conduit model, a crest width, and a treatment of
 form drag.
 
+## D-022 — Outlet geometry: a 30 m throat that cannot pass the flood
+- Date: 2026-10-09
+- Owner supplied the outlet geometry: a **~30 m wide span immediately above the
+  steep 16 % section**, reached from GPL by a **~400 m reach at ~3 % grade**, with
+  the steep boulder section discharging to the beach.
+
+To answer the question directly: yes, the ranges in D-021 spanned crest width
+(50–400 m) and Manning n (0.05–0.15). **30 m is narrower than anything tabulated
+there**, so the shear is higher than any figure in that table.
+
+### If flow is confined to 30 m, everything mobilises
+`tau/tau_c` at S = 0.16 (Lamb, `tau_c` = 1476 Pa):
+
+| Q (m³/s) | n=0.05 | n=0.07 | n=0.10 | branch |
+|---|---|---|---|---|
+| 816 | 2.2 | 2.7 | 3.4 | tunnel, lower |
+| 2,011 | 3.8 | 4.7 | 5.8 | tunnel, upper |
+| 7,480 | 8.4 | 10.2 | 12.7 | non-tunnel, lower |
+| 13,649 | 12.0 | 14.7 | 18.2 | non-tunnel, upper |
+
+The "marginal" verdict for tunnel drainage in D-021 came from assuming a wide
+crest. At 30 m **no branch is marginal** — the lowest case is already 2.2×.
+
+### But a 30 m section cannot pass the flood
+Treating the throat as a critical control, `Q = W sqrt(g) h_c^1.5` and `E = 1.5 h_c`:
+
+| Q | critical depth | head needed |
+|---|---|---|
+| 816 | 4.22 m | **6.3 m** |
+| 2,011 | 7.71 m | **11.6 m** |
+| 7,480 | 18.51 m | **27.8 m** |
+| 13,649 | 27.63 m | **41.5 m** |
+
+GPL can rise only ~1.5–2 m before spilling laterally. At 2 m of head a 30 m
+control passes **145 m³/s**. The flood is 816–13,649 m³/s — the throat is
+**undersized by 6× to 90×**.
+
+### What this means
+GPL physically cannot force the flood through the 30 m throat. It backs up and
+spills laterally, and D-020 established that the lateral route runs onto the
+coastal plain and drains to the sea, with the outlet polygon lying *inside* that
+footprint.
+
+So the controlling question is no longer *how much shear does the flood apply* —
+confined to 30 m it is unambiguously destructive — but **how much of the flood
+goes through the throat at all.** Two readings:
+
+- the flood largely **bypasses** the boulder section, which is then never loaded
+  and survives;
+- the flood **spreads across a front far wider than 30 m** that includes the
+  boulder section, which then sees a much lower unit discharge than Q/30.
+
+Either way the 30 m throat is a low-flow control, not a flood control, and
+`tau = rho g h S` with `h` from `Q/30` is the wrong calculation at flood stage.
+
+**This promotes D-020's bypass question from open to decisive.** It is now the
+single thing standing between the project and a defensible answer on the armor.
+
+### The 3 % connecting reach
+At S = 0.03, `tau_c` = 971 Pa. `tau/tau_c`:
+
+| Q | W=30 m | W=60 m | W=120 m |
+|---|---|---|---|
+| 816 | 1.3 | 0.8 | **0.6** |
+| 2,011 | 2.2 | 1.4 | 1.0 |
+| 7,480 | 4.8 | 3.2 | 2.1 |
+| 13,649 | 6.9 | 4.6 | 3.0 |
+
+The gentler reach is genuinely marginal for tunnel drainage at moderate widths —
+the only place in this analysis where the armor plausibly holds. Its width is
+unmeasured and matters.
+
+### What is needed next
+1. **The overflow front geometry at flood stage** — how wide does flow actually
+   spread between GPL and the beach, and what share crosses the boulder section.
+   This is a 2-D hydraulics question; 1-D cross-section reasoning cannot answer it.
+2. **The width of the 3 % reach.**
+3. **Re-derive GPL's spill stage on the IFSAR DSM.** The ~29.6 m figure came from
+   `surf_2m`, which D-020 showed is unreliable for exactly this purpose.
+
