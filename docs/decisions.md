@@ -1039,3 +1039,67 @@ So **~98 % of the flood cannot pass the boulder outlet.** Whether the armor is
 loaded at all now depends entirely on where that 98 % goes — the bypass question
 (D-020/D-022) is the last substantive unknown between here and an answer.
 
+## D-025 — 2019 USGS lidar: the ZSTD problem, and what it shows at the outlet
+- Date: 2026-10-13
+
+### Why QGIS would not open it
+`glacier_bay_2019.tif` is a 14.2 GB BigTIFF with **ZSTD** compression. QGIS's
+bundled GDAL is not built with the ZSTD codec, so it fails with
+`Cannot open TIFF file due to missing codec ZSTD`. The conda environment's GDAL
+*does* have it, which is the asymmetry to remember: **a raster that opens in the
+pipeline may still be unreadable in QGIS, and vice versa** (qgis/README.md already
+warns against mixing the two GDAL builds in one process).
+
+Fix — clip to the area of interest and re-encode:
+
+```bash
+gdalwarp -t_srs "ESRI:102247" \
+  -te 890000 1100000 912000 1120000 -tr 2 2 -r bilinear \
+  -srcnodata -999999 -dstnodata -9999 \
+  -co COMPRESS=DEFLATE -co PREDICTOR=2 -co TILED=YES -co BIGTIFF=YES \
+  data/raw/2019_USGS_lidar/glacier_bay_2019.tif \
+  data/standard/lidar2019_outlet_2m.tif
+```
+
+14.2 GB → **139 MB**, 2 m, already in the project CRS. Verified readable by QGIS's
+own GDAL. Source is EPSG:6337 (NAD83(2011) / UTM 8N) at 1 m.
+
+### Properties, and two traps
+* **Vertical datum is NAVD88**, established empirically: GPL reads **exactly
+  24.57 m** across the whole lake. ICESat-2 put GPL at 30.0–30.5 m ellipsoidal in
+  2019 (D-017), implying a geoid of ~5.7 m against the ~6.8 m GEOID12A gives.
+  The ~1 m residual is consistent with the unresolved NAD83/ITRF2014 question.
+* **Water is flattened**, as in every other product here. GPL is a single constant
+  and 2.07 % of valid cells sit at exactly 0 (sea). So elevation alone cannot
+  separate "outflow channel" from "lake", which limits what flood-fill analysis
+  can extract.
+* 58 % valid; the rest is void.
+
+### What it settles
+Flood-filling from GPL on this DEM, the connected region grows from **91.97 km²**
+at the lake's own surface to **98.71 km²** at +5.43 m, and reaches the sea at
+*every* stage including the current one. There is no step change.
+
+**This kills the 16.4 km² spill basin for good.** D-015 reported it absorbing
+309 Mm³; D-020 showed it was an artifact of `surf_2m` being ice-clipped and
+lake-masked. The 2019 lidar confirms that independently and with far better data.
+GPL is simply connected to the sea, as a lake with an outlet must be.
+
+### The outflow corridor, located
+Reading the terrain between GPL and the sea at the SW corner: the land strip is
+~430–570 m wide, and the barrier between lake and sea falls to **~21.7–22.5 m**
+around **x 897000–897500, y 1109100–1109300** — some 2–3 m *below* GPL's 24.57 m
+surface. That is the open outlet. Dropping ~22 m to the sea over roughly 400–460 m
+is consistent with the owner's reported 3 % reach followed by a 16 % section.
+
+### What is still not answered, and why
+The flow **partition** — how much of a flood goes through the throat versus around
+it — is not extractable this way. Cross-sections cut through lake, barrier and sea
+together, and because water is flattened the channel cannot be isolated by
+elevation. Hand-rolled flood fills locate the corridor; they do not size its
+conveyance.
+
+That needs proper 2-D hydraulics. The DEM is now in the right CRS, resolution and
+format for HEC-RAS; the remaining preparation is burning the water-flattened areas
+back to channel bathymetry, or treating them as a boundary condition.
+

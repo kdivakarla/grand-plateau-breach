@@ -32,6 +32,8 @@ and refuses to resample.
 | `data/processed/lakes_2018.gpkg` | lake outlines, class 2/3/4 | repo | GPKG | ESRI:102247 | n/a | — | Digitised from Sentinel-2 2018-09-05. **The authoritative lake geometry** (D-015). LGP 3.414, GPL 45.342, Alsek 75.610 km² |
 | `data/processed/ice_2018.gpkg` | ice extent | repo | GPKG | ESRI:102247 | n/a | — | The four lake-terminating RGI glaciers (D-012), trimmed |
 
+| 2019 USGS lidar `glacier_bay_2019.tif` | outlet topography, flow routing | `data/raw/2019_USGS_lidar/` | BigTIFF, **ZSTD** | EPSG:6337 (NAD83(2011) UTM 8N) | **NAVD88** | m | 14.2 GB at 1 m. **QGIS cannot open it — no ZSTD codec.** Clipped copy at `data/standard/lidar2019_outlet_2m.tif` (139 MB, 2 m, ESRI:102247). Water flattened; GPL = 24.57 m (D-025) |
+
 ## ICESat-2
 
 | Dataset | Use | Location | Format | Horizontal CRS | Vertical datum | Units | Notes |
