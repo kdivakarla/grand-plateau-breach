@@ -12,3 +12,9 @@ conduit:                # not used until M6
   lake_temp_C: 0.5
   A: 2.4e-24
   n_glen: 3
+
+# Drainage mode. Owner decision 2026-10-13 (D-024): non-tunnel.
+# LGP has no known prior drainage, so there is no relict channel and S0 is small;
+# conduit.py then closes rather than enlarging, i.e. the tunnel mechanism is not
+# available. Empirical peak discharge therefore uses the non-tunnel relation.
+drainage_mode: non_tunnel          # tunnel | non_tunnel

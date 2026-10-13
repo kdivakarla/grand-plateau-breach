@@ -980,3 +980,62 @@ simply not scaling with the lake. A fully self-similar sweep (area ~ L², depth 
 path length ~ L, `h_pass` ~ L) gives **V^0.87**, close to the expected 2/3. The
 test now does the self-similar sweep and says why.
 
+## D-024 — Drainage mode: non-tunnel (owner decision)
+- Date: 2026-10-13
+- Decided by: **owner**, on the grounds that LGP has no known prior drainage and
+  the evidence leans toward a non-tunnel source.
+
+### The physics agrees
+No prior drainage means no relict channel, so `S0` sits at the low end of the
+spec's 0.01–1 m² range. Running `conduit.py` across that range:
+
+| T_L | S0 | outcome | released of 200 Mm³ |
+|---|---|---|---|
+| 0.0 | 0.01 – 1.0 | conduit closed | 0 – 1.2 Mm³ |
+| 0.5 | 0.01 | conduit closed | 0.0 Mm³ |
+| 0.5 | 0.10 | conduit closed | 0.1 Mm³ |
+| 0.5 | 1.00 | drained | 200 Mm³ |
+
+Only the warmest-and-largest corner produces a tunnel. For a first drainage the
+model closes, so the tunnel mechanism is **not available** and the decision is
+independently supported rather than merely assumed.
+
+The literature points the same way (D-022 discussion): rapid-rise, sheet-flow
+jökulhlaups are associated with the lake reaching **flotation of the dam**, which
+is precisely this project's breach criterion.
+
+### What it fixes
+Peak discharge collapses from a factor of **17 to 1.8**:
+
+| bed | sill | V_w | Q_p |
+|---|---|---|---|
+| millan | along-path | 78–200 | 7,480 – 11,320 |
+| millan | bed-only | 119–306 | 9,008 – 13,649 |
+| iceboost | bed-only | 111–285 | 8,736 – 13,229 |
+
+**Q_p = 7,480 – 13,649 m³/s**, base time 5.8 – 12.5 h. The residual 1.8× is
+V_w — bathymetry and the unresolved sill definition (D-019).
+
+### What it commits us to, and the honest caveat
+`conduit.py` is now a **consistency check, not a predictor**. Nothing in the
+project models the non-tunnel mechanism itself: the discharge rests entirely on
+Walder & Costa's regression over *other* systems, and the triangular hydrograph
+with `t_b = 2 V_w / Q_p` is an assumption, not a result. The 1.8× therefore
+understates the real uncertainty, because it omits the regression scatter.
+
+Closing that gap means either a sheet-flow/jacking model, or the hindcasts —
+which would at least show whether comparable systems follow the regression.
+
+### Consequence at the outlet
+At these discharges the 30 m throat (D-022) passes ~145 m³/s at the ~2 m head GPL
+can reach:
+
+| Q_p | through the throat | must go around |
+|---|---|---|
+| 7,480 | 1.9 % | **98.1 %** |
+| 13,649 | 1.1 % | **98.9 %** |
+
+So **~98 % of the flood cannot pass the boulder outlet.** Whether the armor is
+loaded at all now depends entirely on where that 98 % goes — the bypass question
+(D-020/D-022) is the last substantive unknown between here and an answer.
+
