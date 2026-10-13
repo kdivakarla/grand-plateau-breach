@@ -918,3 +918,65 @@ unmeasured and matters.
 3. **Re-derive GPL's spill stage on the IFSAR DSM.** The ~29.6 m figure came from
    `surf_2m`, which D-020 showed is unreliable for exactly this purpose.
 
+## D-023 — conduit.py (M6), and what it says about the drainage mode
+- Date: 2026-10-13
+- The spec's last module. It does **not** take the drainage mode as input: it
+  integrates the conduit and the mode falls out of whether melt-opening
+  (`~ S^(4/3)`) outruns creep closure (`~ S N^3`).
+
+### Lake temperature is a switch, not a parameter
+Opening and closure balance at a critical conduit size `S*`. Sensible heat from
+the lake moves it by two orders of magnitude:
+
+| lake temperature | S* |
+|---|---|
+| 0.0 °C | **8.16 m²** |
+| 0.5 °C | 0.21 m² |
+| 1.0 °C | 0.043 m² |
+
+The spec samples `S0` log-uniform over **0.01–1 m²**. So `S*` crosses that entire
+range between 0 and 1 °C: at 0 °C no conduit in the sampled range can grow and
+tunnel drainage is **impossible**; at 1 °C every one of them grows.
+
+On the real LGP geometry (V_w = 200 Mm³):
+
+| T_L | S0 | Q_p | released | outcome |
+|---|---|---|---|---|
+| 0.0 | 1.0 | 0.7 | 1.2 Mm³ | conduit closed |
+| 0.1 | 1.0 | 0.7 | 1.9 Mm³ | conduit closed |
+| 0.5 | 0.1 | 0.0 | 0.1 Mm³ | conduit closed |
+| 0.5 | 1.0 | 540 | 200 Mm³ | drained |
+| 1.0 | 0.1 | 1,441 | 200 Mm³ | drained |
+| 1.0 | 1.0 | **1,448** | 200 Mm³ | drained |
+
+**LGP water temperature is listed as an open decision in the spec. It is not a
+minor one — it decides whether the tunnel mechanism exists at all.**
+
+### Independent agreement with the empirical tunnel relation
+When a tunnel does form it gives **Q_p ≈ 1,448 m³/s**, against Walder & Costa's
+tunnel relation at the same volume of **1,519 m³/s** — within 5 %, from entirely
+independent physics. That is the strongest corroboration the project has produced.
+
+### What this tightens
+The model **cannot produce the non-tunnel discharges** (7,480–13,649 m³/s) by any
+combination of the sampled parameters. A Nye conduit at this geometry tops out
+near 1,500. So the factor-of-17 range is **not** 17× of tunnel possibilities — it
+is two distinct mechanisms:
+
+* **tunnel**: ~1,450–1,520 m³/s, and the physics and the regression agree;
+* **non-tunnel**: requires sheet flow or mechanical dam failure, which this model
+  does not represent and cannot rule in or out.
+
+So the question narrows usefully: *does a conduit form at all?* If yes, the
+inflow is around 1,500 m³/s with good confidence. If the lake is cold or the
+initial conduit small, no tunnel forms — and any drainage that does occur must be
+the faster mechanism, which is the branch that mobilises the armor (D-021/D-022).
+
+### A test lesson worth recording
+The spec's scaling check (`Qp ~ V^(2/3)`) **fails** if the sweep varies only lake
+area: that gives V^1.38, and scaling the lake but not the conduit path gives
+V^1.72. Neither says anything about the model — the driving gradient and `N` are
+simply not scaling with the lake. A fully self-similar sweep (area ~ L², depth ~ L,
+path length ~ L, `h_pass` ~ L) gives **V^0.87**, close to the expected 2/3. The
+test now does the self-similar sweep and says why.
+

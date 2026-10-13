@@ -198,7 +198,11 @@ across both modes; drainage mode dominates V_w uncertainty 13.9x to 2.6x.
 volume-preserving rescale. Spec gives exact expected values at V = 500 Mm³, so
 this is strongly testable. Froehlich labelled reference-only.
 
-**M6 — `conduit.py`.** Coupled two-lake ODE, `solve_ivp` with Radau/LSODA,
+**M6 — `conduit.py` — DONE 2026-10-13.** See D-023. Lake temperature switches
+tunnel drainage on or off; when it forms, Q_p = 1,448 m3/s against the empirical
+1,519.
+
+*(original scope)* Coupled two-lake ODE, `solve_ivp` with Radau/LSODA,
 events, the three spec tests (mass balance, zero-head, V^2/3 scaling). Provisional
 2018-geometry run overlaid on the bracket.
 
