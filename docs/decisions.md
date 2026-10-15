@@ -1103,3 +1103,55 @@ That needs proper 2-D hydraulics. The DEM is now in the right CRS, resolution an
 format for HEC-RAS; the remaining preparation is burning the water-flattened areas
 back to channel bathymetry, or treating them as a boundary condition.
 
+## D-026 — Thinning rate independently validated, and it is accelerating
+- Date: 2026-10-14
+- Source: `Lidar_Elevation_Loso/DiffStats_GP/*.json` — six epochs 2005–2020,
+  elevation change against a COP30 reference, binned by elevation. **Unused until
+  now**, and it constrains D-004, the most timing-sensitive parameter in the
+  project.
+
+### dh/dt in the 200–300 m band (the dam elevations)
+| period | GP North | GP South |
+|---|---|---|
+| 2005–2009 | — | −5.09 |
+| 2009–2011 | −7.02 | −5.52 |
+| 2011–2014 | −6.56 | −5.81 |
+| 2014–2017 | **−13.28** | −9.02 |
+| 2017–2020 | −9.87 | **−12.19** |
+| **2009–2020 mean** | **−9.38** | **−8.37** |
+| **2014–2020 recent** | **−11.57** | **−10.60** |
+
+### The baseline is well supported as a long-term average
+D-004's **−9.05 m/yr** sits between the two glaciers' 2009–2020 means (−9.38 and
+−8.37). That value came from OIB/DEM transects and had no independent check until
+now; it has one.
+
+### But thinning is accelerating, so the baseline is probably conservative
+GP South is monotonic: −5.09 → −5.52 → −5.81 → −9.02 → −12.19. GP North is
+noisier but its recent mean is also well above its long-term one. Carrying the
+126.46 m of thinning still needed from 2018:
+
+| rate | source | onset |
+|---|---|---|
+| −7.89 | slowest band | 2034.0 |
+| −9.05 | **project baseline** | **2032.0** |
+| −9.38 | Loso 2009–2020 mean | 2031.5 |
+| −11.58 | Loso 2014–2020 recent | **2028.9** |
+
+**A linear extrapolation of the long-term mean predicts a later breach than the
+recent rate implies — by about three years.** For a hazard assessment that is the
+wrong direction to be wrong in, and it should be stated explicitly rather than
+buried in a single-value forecast.
+
+Replacing the linear rate with a calibrated model is the seasonal-thinning work
+already under way with PyGEM/OGGM. Until then the defensible statement is a
+**range of roughly 2029–2034**, not a single year.
+
+### Note on the 2030 vs 2032 difference
+Phase 1 gives **2030** (crossing 2029.64) from the 2010 IFSAR surface with
+`Bedrock_Aligned` in NAVD88 at f = 0.909. The cascade gives **2032.0** from the
+2018 ArcticDEM with `bed_ellip` in ellipsoidal heights at k = 1.0. Different
+surface epoch, different bed, different vertical datum, different flotation
+factor — and they land two years apart. That is a consistency check, not a
+contradiction, and it is worth presenting as one.
+
