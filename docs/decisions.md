@@ -1171,11 +1171,28 @@ shoreline has 16 gaps below lake level — but only one is a route:
 | 1 | **282 m** | 23.13 m | **23.13 m** — at (897663, 1109119), the boulder corridor |
 | 2–16 | 6–24 m | 24.46–24.55 m | **26.29 m** (= lake + 1.72 m) |
 
-So below **+1.72 m** of rise, **100 % of outflow goes through the boulder
-corridor.** Above it a second route opens east of the outlet. That 26.29 m
-threshold is the same feature the `surf_2m` hypsometry put at 29.6 m ellipsoidal —
-two independent DEMs, 0.3 m apart, which also pins the lidar-to-ellipsoidal offset
-at ~3.0 m rather than the ~6.8 m geoid assumed earlier.
+So below **+1.55 m** of rise, **100 % of outflow goes through the boulder
+corridor.** Above it other routes open east of the outlet. The `surf_2m`
+hypsometry put the same feature at 29.6 m ellipsoidal — two independent DEMs
+within ~0.3 m, which also pins the lidar-to-ellipsoidal offset near 3.0 m rather
+than the ~6.8 m geoid assumed earlier.
+
+**Corrected 2026-10-14 (was +1.72 m).** The first value came from grouping the
+shoreline into gaps whose *terrain* lies below lake level and taking each gap's
+minimum crest. That is the wrong criterion: a route is open when its **crest** is
+below the water surface, regardless of the terrain elevation at the shoreline
+cell itself. Reading crests directly gives the lowest crest outside the boulder
+corridor as **26.12 m = lake + 1.55 m**.
+
+The crests *within* the corridor form a continuum (23.13, 23.18, 23.45, 23.48 …)
+rather than a single value — those are neighbouring cells across the same 282 m
+exit, each with its own controlling elevation. Only one exit is open at lake
+level, and all 282 m of it is the boulder corridor.
+
+Note the width share and the flow share differ and both are correct: at flood
+stage the corridor is only **15–17 % of the open width** but **34–45 % of the
+flow**, because its crest sits ~3 m lower than the others and discharge goes as
+head^1.5.
 
 ### The partition at flood stage
 | Q_p | stage reached | via boulder corridor |
