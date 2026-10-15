@@ -1155,3 +1155,63 @@ surface epoch, different bed, different vertical datum, different flotation
 factor — and they land two years apart. That is a consistency check, not a
 contradiction, and it is worth presenting as one.
 
+## D-027 — The flow partition, computed: GPL has one outlet
+- Date: 2026-10-14
+- Method: parallel-conveyance on the 2019 lidar. For every cell on GPL's
+  shoreline, the **minimax elevation from the sea** gives the controlling crest on
+  that cell's route out. Routes are then treated as weir segments in parallel,
+  `Q = Σ C·w·(h − z_crest)^1.5`.
+
+### GPL has essentially one exit
+Using the lidar's own flattened water surface (24.57 m) as the lake mask, the
+shoreline has 16 gaps below lake level — but only one is a route:
+
+| rank | width | exit invert | **route crest to the sea** |
+|---|---|---|---|
+| 1 | **282 m** | 23.13 m | **23.13 m** — at (897663, 1109119), the boulder corridor |
+| 2–16 | 6–24 m | 24.46–24.55 m | **26.29 m** (= lake + 1.72 m) |
+
+So below **+1.72 m** of rise, **100 % of outflow goes through the boulder
+corridor.** Above it a second route opens east of the outlet. That 26.29 m
+threshold is the same feature the `surf_2m` hypsometry put at 29.6 m ellipsoidal —
+two independent DEMs, 0.3 m apart, which also pins the lidar-to-ellipsoidal offset
+at ~3.0 m rather than the ~6.8 m geoid assumed earlier.
+
+### The partition at flood stage
+| Q_p | stage reached | via boulder corridor |
+|---|---|---|
+| 7,480 | +2.27 m | 3,389 m³/s — **45.3 %** |
+| 13,649 | +2.63 m | 4,670 m³/s — **34.2 %** |
+
+**This corrects D-022.** The earlier "98 % must go around" treated the 30 m throat
+as the only path and compared it to the whole flood. The exit is 282 m wide and
+the lake rises enough to open a second route, so the real split is roughly
+one-third to one-half through the boulder corridor.
+
+### Two bounds, because the sections are in series
+The 282 m exit and the owner's reported 30 m throat are in **series**, so the
+narrower one governs, and the lidar's minimax returns the controlling *elevation*
+without resolving the width at that section:
+
+| bound | boulder share | q at the 30 m steep section | τ/τ_c |
+|---|---|---|---|
+| exit-controlled (282 m) | 34–45 % | 113–156 m²/s | **6.4 – 7.7** |
+| throat-controlled (30 m) | 3–5 % | 9.4–11.0 m²/s | **1.4 – 1.6** |
+
+**Both bounds mobilise the armour.** The question that has run through D-021,
+D-022 and this entry — whether the flood loads the boulder outlet hard enough to
+move it — resolves the same way at either end. Even at the most favourable
+assumption (only 3 % of the flood, confined to 30 m) shear exceeds the threshold
+by 40 %.
+
+### What is still needed
+The bracket is wide (3–45 % of flow, τ/τ_c 1.4–7.7) and closing it needs the
+**cross-section at the 30 m throat** — its invert and width at the controlling
+section — which the 6 m routing grid does not resolve. That is one transect from
+the 2 m lidar, or a tape measure in the field.
+
+Remaining caveats carry over from D-021: mobilisation of D50 is the start of a
+progressive sequence, not failure; `τ = ρghS` assumes steady uniform flow and this
+is supercritical; and form drag on the boulders means these ratios are upper
+bounds.
+
