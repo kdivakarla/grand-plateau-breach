@@ -1,0 +1,43 @@
+# Hindcast event config. Fields marked TO SUPPLY/REQUIRED block calibration.
+event_id: knik
+name: "TO SUPPLY \u2014 full name of the knik event"
+observed:
+  date: null
+  date_precision: null
+  source: null
+  note: 'REQUIRED for calibration: the date the lake drained'
+grid:
+  crs: EPSG:32606
+  res_m: 20
+  out_dir: data/comparison/knik/standard
+  buffer_m: 500
+beds:
+- id: iceboost
+  source_path: data/comparison/knik/bed/iceboost_bed_knik.tif
+  path: data/comparison/knik/standard/bed_iceboost.tif
+  vertical: TO CONFIRM
+  source: IceBoost thickness inversion
+default_bed: iceboost
+surfaces:
+- id: dem_20210421
+  source_path: data/comparison/knik/surface/knikGlacerSurface20210421.tif
+  path: data/comparison/knik/standard/surf.tif
+  date: '2021-04-21'
+  vertical: TO CONFIRM
+classes: data/comparison/knik/standard/classes.tif
+class_codes:
+  land: 0
+  ice: 1
+  draining_lake: 2
+  receiving_lake: 3
+outlines:
+  lakes: null
+  ice: null
+  note: 'REQUIRED: polygons with a ''class'' field (2 = lake that drained, 3 = where
+    it drained to)'
+lake_levels:
+  draining_lake: null
+  receiving_lake: null
+  note: 'REQUIRED: level of the draining lake AT the breach, same vertical datum as
+    the surface'
+output_dir: data/comparison/knik/derived

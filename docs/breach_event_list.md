@@ -126,48 +126,48 @@ notes:
 ### historic event 1
 
 ```
-id:
-name:
+id: bainbridge
+name: Bainbridge Glacier dammed lake 
 status:          observed
-date:                            precision:
-source:
-data_status:
-surface:
-bed:
-lake_level:
-dhdt:
-notes:
+date:    07/31 - 09/05/2022                        precision: Month
+source: Planet Imagery (Hig)
+data_status: partial
+surface: Arctic DEM: November 15, 2018
+bed: iceboost, not validated by oib radar
+lake_level: 216 m, Arctic DEM
+dhdt: oib lidar: -9m/yr
+notes: 
 ```
 
 ### historic event 2
 
 ```
-id:
-name:
+id: knik_river
+name: Knik River Capture from the Knik River
 status:          observed
-date:                            precision:
-source:
-data_status:
-surface:
-bed:
-lake_level:
-dhdt:
+date:   10/2020 - 06/2021                    precision: Season
+source: Planet Imagery (Hig)
+data_status: partial
+surface: artic DEM, only use near the river breach site (-16518122.8, 8717914.5), it is inncoherent far away from the river
+bed: iceboost, minimally checked against the icebridge radar from knik (two short sections with bed returns)
+lake_level: (river) 331, arcticDEM
+dhdt: iceSAT-2 elevations: 4m/yr
 notes:
 ```
 
 ### historic event 3
 
 ```
-id:
-name:
+id: kaskawulsh
+name: kaskawulsh river piracy
 status:          observed
-date:                            precision:
-source:
-data_status:
-surface:
-bed:
-lake_level:
-dhdt:
+date:    05/26-29/2016        precision: days
+source: Dan Shugar, Nature Geoscience Article
+data_status: Partial
+surface: lowerKask_Dem_2016_04_16: ArcticDEM 
+bed: iceboost, mostly relevant with the OIB data
+lake_level: 816m, arcticDEM
+dhdt: NA, since dem is close (within 1 month) from breach.
 notes:
 ```
 
@@ -178,6 +178,8 @@ notes:
 1. **Flat-bed variants** — how should these be defined? Options I can see:
    at the lake-floor elevation; at a fixed depth below the lake surface;
    at the minimum of a Millan-derived bed. Which, and how many per event?
+
+we will use the iceboost model for ice bed topography now. There is room to change this in the future, but we will start with that for now. 
 
 2. **Holdout validation** — this needs enough events to be meaningful. With 3
    historic events, calibrating on 2 and testing on 1 is weak. Worth saying now

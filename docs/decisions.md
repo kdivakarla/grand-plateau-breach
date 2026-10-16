@@ -1232,3 +1232,56 @@ progressive sequence, not failure; `τ = ρghS` assumes steady uniform flow and 
 is supercritical; and form drag on the boulders means these ratios are upper
 bounds.
 
+## D-028 — Three hindcast events ingested; four inputs still block calibration
+- Date: 2026-10-16
+- Owner supplied `data/comparison/{bainbridge,knik,kaskawulsh}` — an IceBoost bed
+  and a DEM for each, plus a dh/dt raster for Bainbridge.
+
+### Co-registration works
+`gpbreach.cascade.build_event_grid` is the general version of `build_grid`:
+it reads a per-event config from `configs/events/`, puts bed and surface on one
+grid at the event's own CRS and resolution, and reports what is missing.
+
+| event | grid | bed | surface | median thickness |
+|---|---|---|---|---|
+| bainbridge | 478 × 420 @ 20 m | IceBoost 100 m | ArcticDEM 2018-11-15, 2.3 m | 171 m |
+| knik | 1359 × 616 @ 20 m | IceBoost 100 m | 2021-04-21, 1.9 m | 442 m |
+| kaskawulsh | 753 × 721 @ 20 m | IceBoost 100 m | 2016-04-16, 2.0 m | 302 m |
+
+Kaskawulsh's bed and surface arrive in **different CRSs** (EPSG:32607 against
+EPSG:3413) and still overlap over 14 × 13 km. Negative thickness is ≤ 0.1 %
+everywhere, which is reassuring for beds and surfaces that were never built
+together.
+
+Knik's maximum thickness of 1,974 m is an artefact of having **no ice mask**: the
+difference is being taken between mountain tops and valley floors. It resolves
+once ice outlines exist.
+
+### What is still needed, per event
+Four things, and none is in the supplied data:
+
+1. **Observed breach date** — the quantity being inverted against.
+2. **Lake outlines** — polygons with a `class` field (2 = the lake that drained,
+   3 = where it drained to). Without them there is no source or target for the
+   pass search.
+3. **Draining-lake level at the breach**, in the surface's vertical datum.
+4. **Receiving-lake level.**
+
+### One shortcut found, one ruled out
+Kaskawulsh's DEM contains a **flat water surface at ~816 m** — three low-relief
+patches totalling 1.2 km² with a standard deviation of 0.10–0.12 m, plus a
+separate body at 750.8 m. The DEM is dated 2016-04-16, roughly a month before the
+2016 event, so if that is the impounded lake its level comes free and requirement
+3 is already met.
+
+Bainbridge and Knik show **no** flat water and **no** interior voids, so their
+lakes are either outside the supplied footprint or the DEMs are clipped to ice.
+Those two need the lake geometry supplied.
+
+### The vertical datum, unasked but load-bearing
+Every bed and surface here is marked `TO CONFIRM`. The calibration inverts
+`h_pass(k) = h_lake`, so a datum offset between the surface and the lake level
+maps **directly** into the implied `k`. At Grand Plateau a ~1 m offset in the
+surface moves the onset by 0.11 yr; here it would move `k` itself, which is the
+quantity the whole exercise exists to measure.
+
